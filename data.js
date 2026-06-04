@@ -165,6 +165,14 @@ function savePointage(employeId, date, service, heureDebut, heureFin, repasPris)
   save(data);
 }
 
+function clearPointage(employeId, date) {
+  const data = load();
+  if (data.pointages[employeId]) {
+    delete data.pointages[employeId][date];
+  }
+  save(data);
+}
+
 // ── Récap ─────────────────────────────────────────────────
 
 function calcRecap(mois) {

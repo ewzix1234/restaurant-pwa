@@ -149,6 +149,8 @@ input:focus {
   padding: 0.65rem 0.1rem;
   outline: none;
   text-align: center;
+  text-align-last: center;
+  -webkit-text-align-last: center;
   -webkit-appearance: none;
   appearance: none;
   cursor: pointer;
@@ -481,6 +483,28 @@ label {
   border-style: solid;
   border-color: var(--accent);
 }
+
+/* ── Effacer jour ────────────────────────────────────────── */
+
+.btn-effacer {
+  display: block;
+  width: 100%;
+  margin-top: 0.6rem;
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
+  color: #b91c1c;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  touch-action: manipulation;
+  border-radius: 8px;
+  transition: background var(--t);
+  min-height: 40px;
+}
+.btn-effacer:active { background: #fef2f2; }
 
 /* ── Print ───────────────────────────────────────────────── */
 

@@ -78,6 +78,7 @@
       </div>
 
       <button class="btn btn-primary btn-block" id="save-btn" onclick="sauvegarder()">Enregistrer</button>
+      <button class="btn-effacer" onclick="effacerJour()">Effacer ce jour</button>
     </div>
     <button class="btn btn-secondary btn-block" onclick="showSection('section-employes')">← Autres employés</button>
   </div>
@@ -356,6 +357,20 @@ function sauvegarder() {
   alert.style.display = 'block';
   btn.textContent = '✓ Enregistré';
   setTimeout(() => { btn.textContent = 'Enregistrer'; alert.style.display = 'none'; }, 2000);
+}
+
+function effacerJour() {
+  const alert = document.getElementById('alert-saisie');
+  clearPointage(currentEmployeId, currentDate);
+  for (const s of ['midi', 'soir']) {
+    setTime(`${s}-debut`, '');
+    setTime(`${s}-fin`, '');
+    document.getElementById(`${s}-repas`).checked = false;
+  }
+  alert.className = 'alert alert-success';
+  alert.textContent = '✓ Journée effacée';
+  alert.style.display = 'block';
+  setTimeout(() => { alert.style.display = 'none'; }, 2000);
 }
 
 // ── PIN ───────────────────────────────────────────────────

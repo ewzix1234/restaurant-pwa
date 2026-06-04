@@ -388,25 +388,7 @@ function renderRecap() {
     return;
   }
 
-  const totalMinutes = recap.reduce((s, e) => s + e.totalMinutes, 0);
-  const totalRepas = recap.reduce((s, e) => s + e.totalRepas, 0);
-  const actifs = recap.filter(e => e.totalMinutes > 0 || e.totalRepas > 0).length;
-
   container.innerHTML = `
-    <div class="recap-kpis">
-      <div class="recap-kpi">
-        <div class="recap-kpi-val">${formatDuration(totalMinutes)}</div>
-        <div class="recap-kpi-lbl">Total heures</div>
-      </div>
-      <div class="recap-kpi">
-        <div class="recap-kpi-val">${totalRepas}</div>
-        <div class="recap-kpi-lbl">Repas</div>
-      </div>
-      <div class="recap-kpi">
-        <div class="recap-kpi-val">${actifs}</div>
-        <div class="recap-kpi-lbl">Actifs</div>
-      </div>
-    </div>
     <div class="card" style="padding:0.4rem 0.6rem">
       ${recap.map(e => `
         <div class="recap-emp-row" onclick="voirDetail(${e.id},'${e.nom.replace(/'/g,"\\'")}')">

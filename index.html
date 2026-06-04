@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Pointage Restaurant</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pointage">
+</head>
+<body>
+<header>
+  <h1>Pointage Restaurant</h1>
+</header>
+
+<div class="container">
+
+  <!-- Accueil : choix employé -->
+  <div id="section-home" class="section active">
+    <div class="home-grid">
+      <div class="home-card" onclick="showSection('section-employes')">
+        <div class="icon">👥</div>
+        <div class="label">Saisir heures</div>
+      </div>
+      <div class="home-card" onclick="showSection('section-pin')">
+        <div class="icon">🔒</div>
+        <div class="label">Espace Responsable</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liste employés pour saisie -->
+  <div id="section-employes" class="section">
+    <div class="card">
+      <div id="alert-emp" class="alert"></div>
+      <div id="liste-employes"></div>
+      <div style="display:flex;gap:0.5rem;margin-top:0.8rem">
+        <input type="text" id="nouvel-employe" placeholder="Nouveau prénom..." style="flex:1">
+        <button class="btn btn-primary" onclick="ajouterEmploye()">+</button>
+      </div>
+    </div>
+    <button class="btn btn-secondary btn-block" onclick="showSection('section-home')">← Retour</button>
+  </div>
+
+  <!-- Saisie heures -->
+  <div id="section-saisie" class="section">
+    <div class="card">
+      <div class="date-nav">
+        <button onclick="changerJour(-1)">‹</button>
+        <span id="date-affichee"></span>
+        <button onclick="changerJour(+1)">›</button>
+      </div>
+      <div id="alert-saisie" class="alert"></div>
+
+      <div class="service-block">
+        <div class="service-title">Midi</div>
+        <div class="row">
+          <div class="field"><label>Début</label><input type="time" id="midi-debut"></div>
+          <div class="field"><label>Fin</label><input type="time" id="midi-fin"></div>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="midi-repas">
+          <label for="midi-repas">Repas pris</label>
+        </div>
+      </div>
+
+      <div class="service-block">
+        <div class="service-title">Soir</div>
+        <div class="row">
+          <div class="field"><label>Début</label><input type="time" id="soir-debut"></div>
+          <div class="field"><label>Fin</label><input type="time" id="soir-fin"></div>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="soir-repas">
+          <label for="soir-repas">Repas pris</label>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-block" id="save-btn" onclick="sauvegarder()">Enregistrer</button>
+    </div>
+    <button class="btn btn-secondary btn-block" onclick="showSection('section-employes')">← Autres employés</button>
+  </div>
+
+  <!-- PIN -->
+  <div id="section-pin" class="section">
+    <div class="card pin-screen">
+      <p style="font-weight:600">Code Responsable</p>
+      <div id="alert-pin" class="alert" style="display:none;width:100%"></div>
+      <input type="password" id="pin-input" inputmode="numeric" maxlength="6" placeholder="000000">
+      <button class="btn btn-primary" style="width:100%;max-width:200px" onclick="validerPin()">Valider</button>
+    </div>
+    <button class="btn btn-secondary btn-block" onclick="showSection('section-home')">← Retour</button>
+  </div>
+
+  <!-- Dashboard responsable -->
+  <div id="section-responsable" class="section">
+    <div class="card no-print">
+      <div class="month-nav">
+        <button onclick="changerMois(-1)">‹</button>
+        <span id="mois-affiche"></span>
+        <button onclick="changerMois(+1)">›</button>
+      </div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        <button class="btn btn-secondary btn-sm" onclick="window.print()">Imprimer</button>
+        <button class="btn btn-secondary btn-sm" onclick="showSection('section-code')">Changer code</button>
+        <button class="btn btn-primary btn-sm" onclick="cloturerMoisAction()" style="background:#c62828">Clôturer le mois</button>
+      </div>
+    </div>
+
+    <div id="recap-content"></div>
+
+    <button class="btn btn-secondary btn-block no-print" onclick="showSection('section-home')" style="margin-top:0.5rem">← Accueil</button>
+  </div>
+
+  <!-- Détail employé -->
+  <div id="section-detail" class="section">
+    <div class="card">
+      <h2 id="detail-nom" style="margin-bottom:0.8rem;font-size:1.1rem"></h2>
+      <div id="detail-content"></div>
+    </div>
+    <button class="btn btn-secondary btn-block" onclick="showSection('section-responsable')">← Récap</button>
+  </div>
+
+  <!-- Changer code -->
+  <div id="section-code" class="section">
+    <div class="card">
+      <h2 style="margin-bottom:1rem;font-size:1rem">Changer le code PIN</h2>
+      <div id="alert-code" class="alert"></div>
+      <div class="field"><label>Ancien code</label><input type="password" id="ancien-code" inputmode="numeric" maxlength="6"></div>
+      <div class="field"><label>Nouveau code (6 chiffres)</label><input type="password" id="nouveau-code" inputmode="numeric" maxlength="6"></div>
+      <button class="btn btn-primary btn-block" onclick="changerCode()">Valider</button>
+    </div>
+    <button class="btn btn-secondary btn-block" onclick="showSection('section-responsable')">← Retour</button>
+  </div>
+
+</div>
+
+<script src="data.js"></script>
+<script>
+let currentEmployeId = null;
+let currentEmployeNom = '';
+let currentDate = today();
+let currentMois = currentMonth();
+
+// ── Navigation ────────────────────────────────────────────
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'section-employes') renderEmployes();
+  if (id === 'section-saisie') renderSaisie();
+  if (id === 'section-responsable') renderRecap();
+  if (id === 'section-pin') {
+    document.getElementById('pin-input').value = '';
+    document.getElementById('alert-pin').style.display = 'none';
+  }
+}
+
+// ── Employés ──────────────────────────────────────────────
+
+function renderEmployes() {
+  const liste = document.getElementById('liste-employes');
+  const employes = getEmployes();
+  if (employes.length === 0) {
+    liste.innerHTML = '<p style="color:var(--muted);padding:0.5rem 0">Aucun employé. Ajoutez-en un ci-dessous.</p>';
+    return;
+  }
+  liste.innerHTML = employes.map(e => `
+    <div class="employe-item">
+      <span class="employe-nom">${e.nom}</span>
+      <button class="btn btn-primary btn-sm" onclick="selectionnerEmploye(${e.id}, '${e.nom.replace(/'/g, "\\'")}')">Saisir</button>
+    </div>
+  `).join('');
+}
+
+function ajouterEmploye() {
+  const input = document.getElementById('nouvel-employe');
+  const nom = input.value.trim();
+  if (!nom) return;
+  addEmploye(nom);
+  input.value = '';
+  renderEmployes();
+}
+
+function selectionnerEmploye(id, nom) {
+  currentEmployeId = id;
+  currentEmployeNom = nom;
+  currentDate = today();
+  showSection('section-saisie');
+}
+
+// ── Saisie ────────────────────────────────────────────────
+
+function renderSaisie() {
+  const header = document.querySelector('#section-saisie .card');
+  document.getElementById('date-affichee').textContent = `${currentEmployeNom} — ${formatDate(currentDate)}`;
+  const pts = getPointages(currentEmployeId, currentDate);
+  for (const s of ['midi', 'soir']) {
+    const p = pts[s] || {};
+    document.getElementById(`${s}-debut`).value = p.heureDebut || '';
+    document.getElementById(`${s}-fin`).value = p.heureFin || '';
+    document.getElementById(`${s}-repas`).checked = !!p.repasPris;
+  }
+  document.getElementById('alert-saisie').style.display = 'none';
+}
+
+function changerJour(delta) {
+  const d = new Date(currentDate + 'T12:00:00');
+  d.setDate(d.getDate() + delta);
+  currentDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  renderSaisie();
+}
+
+function sauvegarder() {
+  const btn = document.getElementById('save-btn');
+  const alert = document.getElementById('alert-saisie');
+  alert.style.display = 'none';
+
+  for (const s of ['midi', 'soir']) {
+    const debut = document.getElementById(`${s}-debut`).value;
+    const fin = document.getElementById(`${s}-fin`).value;
+    if (debut && fin && fin <= debut) {
+      alert.className = 'alert alert-error';
+      alert.textContent = `Service ${s} : l'heure de fin doit être après le début`;
+      alert.style.display = 'block';
+      return;
+    }
+    const repas = document.getElementById(`${s}-repas`).checked;
+    savePointage(currentEmployeId, currentDate, s, debut, fin, repas);
+  }
+
+  alert.className = 'alert alert-success';
+  alert.textContent = '✓ Heures enregistrées';
+  alert.style.display = 'block';
+  btn.textContent = '✓ Enregistré';
+  setTimeout(() => { btn.textContent = 'Enregistrer'; alert.style.display = 'none'; }, 2000);
+}
+
+// ── PIN ───────────────────────────────────────────────────
+
+async function validerPin() {
+  const pin = document.getElementById('pin-input').value;
+  const alert = document.getElementById('alert-pin');
+  const ok = await verifyPin(pin);
+  if (ok) {
+    showSection('section-responsable');
+  } else {
+    alert.className = 'alert alert-error';
+    alert.textContent = 'Code incorrect';
+    alert.style.display = 'block';
+  }
+}
+
+// ── Récap ─────────────────────────────────────────────────
+
+function renderRecap() {
+  const [annee, mois] = currentMois.split('-');
+  const noms = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  document.getElementById('mois-affiche').textContent = `${noms[parseInt(mois)-1]} ${annee}`;
+
+  const recap = calcRecap(currentMois);
+  const container = document.getElementById('recap-content');
+
+  if (recap.length === 0) {
+    container.innerHTML = '<div class="card"><p style="color:var(--muted)">Aucun employé.</p></div>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="card">
+      <table class="recap-table">
+        <thead><tr><th>Employé</th><th>Heures</th><th>Repas</th><th></th></tr></thead>
+        <tbody>
+          ${recap.map(e => `
+            <tr>
+              <td>${e.nom}</td>
+              <td>${e.totalHeures}</td>
+              <td>${e.totalRepas}</td>
+              <td><a class="detail-link" href="#" onclick="voirDetail(${e.id},'${e.nom.replace(/'/g,"\\'")}');return false">Détail</a></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function changerMois(delta) {
+  const [y, m] = currentMois.split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  currentMois = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  renderRecap();
+}
+
+function voirDetail(id, nom) {
+  document.getElementById('detail-nom').textContent = nom;
+  const recap = calcRecap(currentMois);
+  const emp = recap.find(e => e.id === id);
+  if (!emp || Object.keys(emp.detail).length === 0) {
+    document.getElementById('detail-content').innerHTML = '<p style="color:var(--muted)">Aucune donnée ce mois.</p>';
+  } else {
+    const jours = Object.keys(emp.detail).sort();
+    document.getElementById('detail-content').innerHTML = jours.map(date => {
+      const d = emp.detail[date];
+      return `
+        <div style="margin-bottom:0.8rem">
+          <strong>${formatDate(date)}</strong>
+          ${['midi','soir'].map(s => {
+            const p = d[s];
+            if (!p || (!p.heureDebut && !p.heureFin && !p.repasPris)) return '';
+            const duree = (p.heureDebut && p.heureFin) ? formatDuration(minutesDiff(p.heureDebut, p.heureFin)) : '-';
+            return `<div style="font-size:0.9rem;color:var(--muted);margin-left:0.5rem">
+              ${s.charAt(0).toUpperCase()+s.slice(1)} : ${p.heureDebut||'-'} → ${p.heureFin||'-'} (${duree})${p.repasPris?' 🍽':''}
+            </div>`;
+          }).join('')}
+        </div>`;
+    }).join('');
+  }
+  showSection('section-detail');
+}
+
+function cloturerMoisAction() {
+  if (!confirm(`Clôturer ${currentMois} ? Les données seront archivées et effacées.`)) return;
+  cloturerMois(currentMois);
+  const [y, m] = currentMois.split('-').map(Number);
+  const prev = new Date(y, m - 1, 0);
+  currentMois = `${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,'0')}`;
+  renderRecap();
+  alert('Mois clôturé et archivé.');
+}
+
+// ── Changer code ──────────────────────────────────────────
+
+async function changerCode() {
+  const ancien = document.getElementById('ancien-code').value;
+  const nouveau = document.getElementById('nouveau-code').value;
+  const alertEl = document.getElementById('alert-code');
+  try {
+    await changePin(ancien, nouveau);
+    alertEl.className = 'alert alert-success';
+    alertEl.textContent = '✓ Code modifié';
+    alertEl.style.display = 'block';
+    document.getElementById('ancien-code').value = '';
+    document.getElementById('nouveau-code').value = '';
+  } catch (e) {
+    alertEl.className = 'alert alert-error';
+    alertEl.textContent = e.message;
+    alertEl.style.display = 'block';
+  }
+}
+
+// ── Entrée clavier ────────────────────────────────────────
+
+document.getElementById('nouvel-employe').addEventListener('keydown', e => {
+  if (e.key === 'Enter') ajouterEmploye();
+});
+document.getElementById('pin-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') validerPin();
+});
+
+// ── PWA ───────────────────────────────────────────────────
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+</body>
+</html>

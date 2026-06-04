@@ -388,21 +388,37 @@ function renderRecap() {
     return;
   }
 
+  const totalMinutes = recap.reduce((s, e) => s + e.totalMinutes, 0);
+  const totalRepas = recap.reduce((s, e) => s + e.totalRepas, 0);
+  const actifs = recap.filter(e => e.totalMinutes > 0 || e.totalRepas > 0).length;
+
   container.innerHTML = `
-    <div class="card">
-      <table class="recap-table">
-        <thead><tr><th>Employé</th><th>Heures</th><th>Repas</th><th></th></tr></thead>
-        <tbody>
-          ${recap.map(e => `
-            <tr>
-              <td style="font-weight:500">${e.nom}</td>
-              <td>${e.totalHeures}</td>
-              <td>${e.totalRepas}</td>
-              <td><button class="btn btn-secondary btn-sm" onclick="voirDetail(${e.id},'${e.nom.replace(/'/g,"\\'")}')">Voir →</button></td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
+    <div class="recap-kpis">
+      <div class="recap-kpi">
+        <div class="recap-kpi-val">${formatDuration(totalMinutes)}</div>
+        <div class="recap-kpi-lbl">Total heures</div>
+      </div>
+      <div class="recap-kpi">
+        <div class="recap-kpi-val">${totalRepas}</div>
+        <div class="recap-kpi-lbl">Repas</div>
+      </div>
+      <div class="recap-kpi">
+        <div class="recap-kpi-val">${actifs}</div>
+        <div class="recap-kpi-lbl">Actifs</div>
+      </div>
+    </div>
+    <div class="card" style="padding:0.4rem 0.6rem">
+      ${recap.map(e => `
+        <div class="recap-emp-row" onclick="voirDetail(${e.id},'${e.nom.replace(/'/g,"\\'")}')">
+          <div class="recap-emp-av">${e.nom.charAt(0).toUpperCase()}</div>
+          <div class="recap-emp-info">
+            <div class="recap-emp-nom">${e.nom}</div>
+            <div class="recap-emp-sub">${e.totalRepas > 0 ? `${e.totalRepas} repas` : 'Aucun repas'}</div>
+          </div>
+          <div class="recap-emp-h">${e.totalHeures}</div>
+          <div class="recap-emp-arr">›</div>
+        </div>
+      `).join('')}
     </div>
   `;
 }
@@ -479,12 +495,25 @@ function exportTableau() {
   const noms = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
   const nomMois = `${noms[parseInt(moisNum)-1]} ${annee}`;
 
-  const lignesSommaire = recap.map(e => `
+  const totalMinutes = recap.reduce((s, e) => s + e.totalMinutes, 0);
+  const totalRepas = recap.reduce((s, e) => s + e.totalRepas, 0);
+  const actifs = recap.filter(e => e.totalMinutes > 0 || e.totalRepas > 0).length;
+
+  const lignesSommaire = recap.map(e => {
+    const jours = Object.keys(e.detail).length;
+    return `
     <tr>
-      <td>${e.nom}</td>
-      <td style="text-align:center">${e.totalHeures}</td>
-      <td style="text-align:center">${e.totalRepas}</td>
-    </tr>`).join('');
+      <td>
+        <div style="display:flex;align-items:center;gap:0.65rem">
+          <div style="width:32px;height:32px;border-radius:50%;background:#1a1a2e;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;flex-shrink:0">${e.nom.charAt(0).toUpperCase()}</div>
+          <span style="font-weight:600">${e.nom}</span>
+        </div>
+      </td>
+      <td style="text-align:center"><span style="display:inline-block;background:#fef3c7;color:#b45309;font-weight:700;padding:0.18rem 0.65rem;border-radius:20px;font-size:0.85rem">${e.totalHeures}</span></td>
+      <td style="text-align:center;color:${e.totalRepas > 0 ? '#1e293b' : '#94a3b8'}">${e.totalRepas > 0 ? e.totalRepas : '—'}</td>
+      <td style="text-align:center;color:${jours > 0 ? '#1e293b' : '#94a3b8'}">${jours > 0 ? jours : '—'}</td>
+    </tr>`;
+  }).join('');
 
   const sections = recap.map(e => {
     const jours = Object.keys(e.detail).sort();
@@ -492,77 +521,179 @@ function exportTableau() {
     const lignes = jours.map(date => {
       const d = e.detail[date];
       const [y, m, j] = date.split('-');
-      const affDate = `${j}/${m}/${y}`;
+      const affDate = `${j}/${m}`;
       const midi = d.midi;
       const soir = d.soir;
-      const duréeMidi = (midi?.heureDebut && midi?.heureFin) ? formatDuration(minutesDiff(midi.heureDebut, midi.heureFin)) : '-';
-      const duréeSoir = (soir?.heureDebut && soir?.heureFin) ? formatDuration(minutesDiff(soir.heureDebut, soir.heureFin)) : '-';
+      const duréeMidi = (midi?.heureDebut && midi?.heureFin) ? formatDuration(minutesDiff(midi.heureDebut, midi.heureFin)) : '';
+      const duréeSoir = (soir?.heureDebut && soir?.heureFin) ? formatDuration(minutesDiff(soir.heureDebut, soir.heureFin)) : '';
+      const midiHor = (midi?.heureDebut || midi?.heureFin) ? `${midi?.heureDebut||'—'}&thinsp;→&thinsp;${midi?.heureFin||'—'}` : '<span style="color:#cbd5e1">—</span>';
+      const soirHor = (soir?.heureDebut || soir?.heureFin) ? `${soir?.heureDebut||'—'}&thinsp;→&thinsp;${soir?.heureFin||'—'}` : '<span style="color:#cbd5e1">—</span>';
       return `<tr>
-        <td>${affDate}</td>
-        <td style="text-align:center">${midi?.heureDebut||'-'} → ${midi?.heureFin||'-'}</td>
-        <td style="text-align:center">${duréeMidi}</td>
-        <td style="text-align:center">${midi?.repasPris ? 'Oui' : '-'}</td>
-        <td style="text-align:center">${soir?.heureDebut||'-'} → ${soir?.heureFin||'-'}</td>
-        <td style="text-align:center">${duréeSoir}</td>
-        <td style="text-align:center">${soir?.repasPris ? 'Oui' : '-'}</td>
+        <td style="padding:0.5rem 0.75rem;font-weight:500;color:#475569;white-space:nowrap;border-bottom:1px solid #f1f5f9">${affDate}</td>
+        <td style="padding:0.5rem 0.75rem;text-align:center;border-bottom:1px solid #f1f5f9;white-space:nowrap">${midiHor}</td>
+        <td style="padding:0.5rem 0.75rem;text-align:center;border-bottom:1px solid #f1f5f9;font-weight:700;color:${duréeMidi ? '#b45309' : '#cbd5e1'}">${duréeMidi || '—'}</td>
+        <td style="padding:0.5rem 0.75rem;text-align:center;border-bottom:1px solid #f1f5f9;border-right:1px solid #e2e8f0">${midi?.repasPris ? '<span style="color:#16a34a;font-weight:700">✓</span>' : '<span style="color:#cbd5e1">—</span>'}</td>
+        <td style="padding:0.5rem 0.75rem;text-align:center;border-bottom:1px solid #f1f5f9;white-space:nowrap">${soirHor}</td>
+        <td style="padding:0.5rem 0.75rem;text-align:center;border-bottom:1px solid #f1f5f9;font-weight:700;color:${duréeSoir ? '#7c3aed' : '#cbd5e1'}">${duréeSoir || '—'}</td>
+        <td style="padding:0.5rem 0.75rem;text-align:center;border-bottom:1px solid #f1f5f9">${soir?.repasPris ? '<span style="color:#16a34a;font-weight:700">✓</span>' : '<span style="color:#cbd5e1">—</span>'}</td>
       </tr>`;
     }).join('');
     return `
-      <details style="margin-bottom:0.8rem;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden">
-        <summary style="padding:0.9rem 1rem;background:#f9f9f9;cursor:pointer;font-weight:600;color:#1a1a2e;list-style:none;display:flex;justify-content:space-between;align-items:center">
-          <span>${e.nom}</span>
-          <span style="font-weight:400;font-size:0.9rem;color:#555">${e.totalHeures} · ${e.totalRepas} repas ▸</span>
+      <details style="margin-bottom:0.6rem;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.04)">
+        <summary style="padding:0.8rem 1rem;cursor:pointer;display:flex;align-items:center;gap:0.7rem;list-style:none;user-select:none;-webkit-tap-highlight-color:transparent">
+          <div style="width:34px;height:34px;border-radius:50%;background:#1a1a2e;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0">${e.nom.charAt(0).toUpperCase()}</div>
+          <span style="font-weight:600;font-size:0.95rem;flex:1;color:#1e293b">${e.nom}</span>
+          <span style="font-weight:700;color:#b45309;font-size:0.9rem">${e.totalHeures}</span>
+          <span style="color:#94a3b8;font-size:0.82rem;margin-left:0.4rem">${e.totalRepas} repas&nbsp;›</span>
         </summary>
-        <div style="padding:1rem;overflow-x:auto">
-        <table style="border-collapse:collapse;font-size:0.85rem;min-width:480px">
-          <thead>
-            <tr style="background:#1a1a2e;color:white">
-              <th rowspan="2" style="padding:6px 10px;text-align:left;vertical-align:middle">Date</th>
-              <th colspan="3" style="padding:6px 10px;text-align:center;border-right:1px solid rgba(255,255,255,0.2)">Midi</th>
-              <th colspan="3" style="padding:6px 10px;text-align:center">Soir</th>
-            </tr>
-            <tr style="background:#2a2a45;color:white;font-size:0.8rem">
-              <th style="padding:4px 10px;font-weight:400">Horaires</th>
-              <th style="padding:4px 10px;font-weight:400">Durée</th>
-              <th style="padding:4px 10px;font-weight:400;border-right:1px solid rgba(255,255,255,0.2)">Repas</th>
-              <th style="padding:4px 10px;font-weight:400">Horaires</th>
-              <th style="padding:4px 10px;font-weight:400">Durée</th>
-              <th style="padding:4px 10px;font-weight:400">Repas</th>
-            </tr>
-          </thead>
-          <tbody>${lignes}</tbody>
-        </table>
+        <div style="overflow-x:auto;border-top:1px solid #e2e8f0">
+          <table style="width:100%;border-collapse:collapse;font-size:0.82rem;min-width:460px">
+            <thead>
+              <tr>
+                <th rowspan="2" style="padding:0.45rem 0.75rem;text-align:left;vertical-align:middle;background:#f1f5f9;color:#475569;font-size:0.72rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;border-bottom:1px solid #e2e8f0">Date</th>
+                <th colspan="3" style="padding:0.4rem 0.75rem;text-align:center;background:#fef9c3;color:#854d0e;font-size:0.7rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-right:1px solid #e2e8f0">Midi</th>
+                <th colspan="3" style="padding:0.4rem 0.75rem;text-align:center;background:#ede9fe;color:#5b21b6;font-size:0.7rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase">Soir</th>
+              </tr>
+              <tr>
+                <th style="padding:0.35rem 0.75rem;background:#fef9c3;color:#78350f;font-size:0.72rem;font-weight:500;text-align:center;border-bottom:1px solid #e2e8f0">Horaires</th>
+                <th style="padding:0.35rem 0.75rem;background:#fef9c3;color:#78350f;font-size:0.72rem;font-weight:500;text-align:center;border-bottom:1px solid #e2e8f0">Durée</th>
+                <th style="padding:0.35rem 0.75rem;background:#fef9c3;color:#78350f;font-size:0.72rem;font-weight:500;text-align:center;border-bottom:1px solid #e2e8f0;border-right:1px solid #e2e8f0">Repas</th>
+                <th style="padding:0.35rem 0.75rem;background:#ede9fe;color:#4c1d95;font-size:0.72rem;font-weight:500;text-align:center;border-bottom:1px solid #e2e8f0">Horaires</th>
+                <th style="padding:0.35rem 0.75rem;background:#ede9fe;color:#4c1d95;font-size:0.72rem;font-weight:500;text-align:center;border-bottom:1px solid #e2e8f0">Durée</th>
+                <th style="padding:0.35rem 0.75rem;background:#ede9fe;color:#4c1d95;font-size:0.72rem;font-weight:500;text-align:center;border-bottom:1px solid #e2e8f0">Repas</th>
+              </tr>
+            </thead>
+            <tbody>${lignes}</tbody>
+          </table>
         </div>
       </details>`;
   }).join('');
 
-  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Récap ${nomMois}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; padding: 1.5rem; color: #222; }
-    h1 { color: #1a1a2e; margin-bottom: 0.3rem; }
-    h2 { color: #1a1a2e; margin: 1.5rem 0 0.5rem; }
-    .scroll { overflow-x: auto; }
-    table { border-collapse: collapse; margin-bottom: 1rem; }
-    th { background: #1a1a2e; color: white; padding: 8px 10px; text-align: center; white-space: nowrap; }
-    th:first-child { text-align: left; }
-    td { padding: 6px 10px; border-bottom: 1px solid #eee; white-space: nowrap; text-align: center; }
-    td:first-child { text-align: left; }
-    tr:last-child td { border-bottom: none; }
-    .sum-table { width: 100%; }
-    @media print { body { padding: 1rem; } .scroll { overflow: visible; } }
-  </style></head><body>
-  <h1>Récapitulatif — ${nomMois}</h1>
-  <p style="color:#888;margin-bottom:1.5rem">Généré le ${new Date().toLocaleDateString('fr')}</p>
-  <h2>Résumé</h2>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Karla', Arial, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      padding: 1.5rem 1rem 3rem;
+      max-width: 780px;
+      margin: 0 auto;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.6rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .page-title { font-size: 1.55rem; font-weight: 700; color: #1a1a2e; }
+    .page-meta { font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem; }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.7rem;
+      margin-bottom: 1.6rem;
+    }
+    .kpi-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem 0.75rem;
+      text-align: center;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .kpi-value { font-size: 1.45rem; font-weight: 700; color: #b45309; font-variant-numeric: tabular-nums; }
+    .kpi-label { font-size: 0.7rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.2rem; }
+    .section-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 0.6rem; }
+    .sum-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 1.6rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .sum-table thead th {
+      background: #1a1a2e;
+      color: white;
+      padding: 0.6rem 1rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-align: left;
+    }
+    .sum-table thead th:not(:first-child) { text-align: center; }
+    .sum-table tbody td { padding: 0.65rem 1rem; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem; }
+    .sum-table tbody tr:last-child td { border-bottom: none; }
+    .sum-table tbody tr:nth-child(even) { background: #fafbfc; }
+    details summary::-webkit-details-marker { display: none; }
+    @media (max-width: 480px) {
+      .kpi-value { font-size: 1.15rem; }
+      .page-title { font-size: 1.25rem; }
+      body { padding: 1rem 0.75rem 2rem; }
+    }
+    @media print {
+      body { background: white; padding: 0.5rem; max-width: 100%; }
+      .kpi-card, .sum-table { box-shadow: none; }
+      details { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <div>
+      <div class="page-title">Récapitulatif — ${nomMois}</div>
+      <div class="page-meta">Généré le ${new Date().toLocaleDateString('fr', {day:'2-digit', month:'long', year:'numeric'})}</div>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-value">${formatDuration(totalMinutes)}</div>
+      <div class="kpi-label">Total heures</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">${totalRepas}</div>
+      <div class="kpi-label">Repas</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">${actifs}</div>
+      <div class="kpi-label">Employés</div>
+    </div>
+  </div>
+
+  <div class="section-label">Résumé</div>
   <table class="sum-table">
-    <thead><tr><th style="text-align:left">Employé</th><th>Total heures</th><th>Repas</th></tr></thead>
+    <thead>
+      <tr>
+        <th>Employé</th>
+        <th>Heures</th>
+        <th>Repas</th>
+        <th>Jours</th>
+      </tr>
+    </thead>
     <tbody>${lignesSommaire}</tbody>
   </table>
-  <h2>Détail par employé <span style="font-size:0.85rem;font-weight:400;color:#888">(cliquer pour ouvrir)</span></h2>
+
+  <div class="section-label" style="margin-bottom:0.7rem">Détail par employé &nbsp;<span style="font-weight:400;text-transform:none;letter-spacing:0;color:#b0bec5;font-size:0.78rem">(cliquer pour ouvrir)</span></div>
   ${sections}
-  </body></html>`;
+</body>
+</html>`;
 
   const blob = new Blob([html], { type: 'text/html' });
   const url = URL.createObjectURL(blob);

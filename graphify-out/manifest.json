@@ -1,0 +1,27 @@
+{
+  "/Users/elliot/restaurant-pwa/data.js": {
+    "mtime": 1780538781.799468,
+    "ast_hash": "4f68b3acecc712fd526619793ae688bb",
+    "semantic_hash": "4f68b3acecc712fd526619793ae688bb"
+  },
+  "/Users/elliot/restaurant-pwa/manifest.json": {
+    "mtime": 1780535974.2585878,
+    "ast_hash": "8f1b6cc59fa5139c971625ebf5d50a21",
+    "semantic_hash": "8f1b6cc59fa5139c971625ebf5d50a21"
+  },
+  "/Users/elliot/restaurant-pwa/sw.js": {
+    "mtime": 1780539506.9393606,
+    "ast_hash": "7a31bc5d98a571db21248c04d2b7adfd",
+    "semantic_hash": "7a31bc5d98a571db21248c04d2b7adfd"
+  },
+  "/Users/elliot/restaurant-pwa/index.html": {
+    "mtime": 1780539503.5971804,
+    "ast_hash": "76440732a73386c43c71cf75fd41b08f",
+    "semantic_hash": "76440732a73386c43c71cf75fd41b08f"
+  },
+  "/Users/elliot/restaurant-pwa/icon.svg": {
+    "mtime": 1780535977.8330088,
+    "ast_hash": "33e273dd08f91867a80966684a594f34",
+    "semantic_hash": "33e273dd08f91867a80966684a594f34"
+  }
+}

@@ -253,23 +253,101 @@ label {
 }
 .date-nav button:active { background: #cbd5e1; transform: scale(0.94); }
 
-/* ── Recap Table ─────────────────────────────────────────── */
+/* ── Recap KPI Cards ─────────────────────────────────────── */
 
-.recap-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-.recap-table th {
+.recap-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.55rem;
+  margin-bottom: 0.9rem;
+}
+
+.recap-kpi {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 0.85rem 0.5rem;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.recap-kpi-val {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.recap-kpi-lbl {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 0.2rem;
+}
+
+/* ── Recap Employee Rows ─────────────────────────────────── */
+
+.recap-emp-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.65rem 0.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background var(--t), transform var(--t);
+  -webkit-tap-highlight-color: transparent;
+}
+.recap-emp-row:active { background: #f1f5f9; transform: scale(0.99); }
+
+.recap-emp-av {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   background: var(--primary);
   color: white;
-  padding: 0.55rem 0.7rem;
-  text-align: left;
-  font-weight: 600;
-  font-size: 0.82rem;
-  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
 }
-.recap-table th:first-child { border-radius: 8px 0 0 0; }
-.recap-table th:last-child { border-radius: 0 8px 0 0; }
-.recap-table td { padding: 0.6rem 0.7rem; border-bottom: 1px solid var(--border); }
-.recap-table tr:last-child td { border-bottom: none; }
-.recap-table tbody tr:hover { background: #f8fafc; }
+
+.recap-emp-info { flex: 1; min-width: 0; }
+
+.recap-emp-nom {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recap-emp-sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 0.05rem;
+}
+
+.recap-emp-h {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.recap-emp-arr {
+  font-size: 1.1rem;
+  color: #cbd5e1;
+  padding-left: 0.1rem;
+  flex-shrink: 0;
+}
 
 /* ── Month Nav ───────────────────────────────────────────── */
 

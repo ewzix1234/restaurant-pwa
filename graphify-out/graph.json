@@ -1,0 +1,2698 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {
+    "hyperedges": [
+      {
+        "id": "save_flow",
+        "label": "savePointage \u2192 save \u2192 syncToGist data flow",
+        "nodes": [
+          "fn_save_pointage",
+          "fn_save",
+          "fn_sync_to_gist",
+          "github_gist_api",
+          "local_storage"
+        ],
+        "relation": "data_flow",
+        "description": "Complete write path: time entry saved locally then async-synced to GitHub Gist after 4s debounce"
+      },
+      {
+        "id": "pin_auth_flow",
+        "label": "PIN authentication flow",
+        "nodes": [
+          "section_pin",
+          "fn_valider_pin",
+          "fn_verify_pin",
+          "fn_hash_pin",
+          "web_crypto",
+          "section_responsable"
+        ],
+        "relation": "auth_flow",
+        "description": "User enters PIN \u2192 validerPin \u2192 verifyPin hashes with SHA-256 \u2192 compare to stored hash \u2192 unlock manager dashboard"
+      },
+      {
+        "id": "employee_crud_flow",
+        "label": "Employee CRUD operations",
+        "nodes": [
+          "fn_add_employe",
+          "fn_rename_employe",
+          "fn_delete_employe",
+          "fn_get_employes",
+          "fn_load",
+          "fn_save",
+          "local_storage"
+        ],
+        "relation": "crud_flow",
+        "description": "All employee operations load from localStorage, mutate the data object, and save back"
+      },
+      {
+        "id": "gist_sync_setup",
+        "label": "GitHub Gist sync setup and restore",
+        "nodes": [
+          "fn_setup_sync",
+          "fn_sync_to_gist",
+          "fn_restore_from_gist",
+          "fn_get_sync_config",
+          "fn_set_sync_config",
+          "github_gist_api"
+        ],
+        "relation": "sync_flow",
+        "description": "Token validated \u2192 config stored \u2192 initial sync triggered; restore reads backup from Gist into localStorage"
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "label": "data.js",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L1",
+      "id": "data",
+      "community": 0,
+      "norm_label": "data.js"
+    },
+    {
+      "label": "load()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L6",
+      "id": "data_load",
+      "community": 0,
+      "norm_label": "load()"
+    },
+    {
+      "label": "save()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L11",
+      "id": "data_save",
+      "community": 0,
+      "norm_label": "save()"
+    },
+    {
+      "label": "getSyncConfig()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L19",
+      "id": "data_getsyncconfig",
+      "community": 0,
+      "norm_label": "getsyncconfig()"
+    },
+    {
+      "label": "setSyncConfig()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L23",
+      "id": "data_setsyncconfig",
+      "community": 0,
+      "norm_label": "setsyncconfig()"
+    },
+    {
+      "label": "syncToGist()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L27",
+      "id": "data_synctogist",
+      "community": 0,
+      "norm_label": "synctogist()"
+    },
+    {
+      "label": "restoreFromGist()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L54",
+      "id": "data_restorefromgist",
+      "community": 0,
+      "norm_label": "restorefromgist()"
+    },
+    {
+      "label": "setupSync()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L68",
+      "id": "data_setupsync",
+      "community": 0,
+      "norm_label": "setupsync()"
+    },
+    {
+      "label": "updateSyncBadge()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L76",
+      "id": "data_updatesyncbadge",
+      "community": 0,
+      "norm_label": "updatesyncbadge()"
+    },
+    {
+      "label": "hashPin()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L93",
+      "id": "data_hashpin",
+      "community": 0,
+      "norm_label": "hashpin()"
+    },
+    {
+      "label": "minutesDiff()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L98",
+      "id": "data_minutesdiff",
+      "community": 0,
+      "norm_label": "minutesdiff()"
+    },
+    {
+      "label": "formatDuration()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L104",
+      "id": "data_formatduration",
+      "community": 0,
+      "norm_label": "formatduration()"
+    },
+    {
+      "label": "today()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L109",
+      "id": "data_today",
+      "community": 0,
+      "norm_label": "today()"
+    },
+    {
+      "label": "currentMonth()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L114",
+      "id": "data_currentmonth",
+      "community": 0,
+      "norm_label": "currentmonth()"
+    },
+    {
+      "label": "formatDate()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L119",
+      "id": "data_formatdate",
+      "community": 0,
+      "norm_label": "formatdate()"
+    },
+    {
+      "label": "getEmployes()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L126",
+      "id": "data_getemployes",
+      "community": 0,
+      "norm_label": "getemployes()"
+    },
+    {
+      "label": "addEmploye()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L130",
+      "id": "data_addemploye",
+      "community": 0,
+      "norm_label": "addemploye()"
+    },
+    {
+      "label": "renameEmploye()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L138",
+      "id": "data_renameemploye",
+      "community": 0,
+      "norm_label": "renameemploye()"
+    },
+    {
+      "label": "deleteEmploye()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L145",
+      "id": "data_deleteemploye",
+      "community": 0,
+      "norm_label": "deleteemploye()"
+    },
+    {
+      "label": "getPointages()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L154",
+      "id": "data_getpointages",
+      "community": 0,
+      "norm_label": "getpointages()"
+    },
+    {
+      "label": "savePointage()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L159",
+      "id": "data_savepointage",
+      "community": 0,
+      "norm_label": "savepointage()"
+    },
+    {
+      "label": "calcRecap()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L170",
+      "id": "data_calcrecap",
+      "community": 0,
+      "norm_label": "calcrecap()"
+    },
+    {
+      "label": "verifyPin()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L192",
+      "id": "data_verifypin",
+      "community": 0,
+      "norm_label": "verifypin()"
+    },
+    {
+      "label": "changePin()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L197",
+      "id": "data_changepin",
+      "community": 0,
+      "norm_label": "changepin()"
+    },
+    {
+      "label": "cloturerMois()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L207",
+      "id": "data_cloturermois",
+      "community": 0,
+      "norm_label": "cloturermois()"
+    },
+    {
+      "label": "exportData()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L223",
+      "id": "data_exportdata",
+      "community": 0,
+      "norm_label": "exportdata()"
+    },
+    {
+      "label": "importData()",
+      "file_type": "code",
+      "source_file": "data.js",
+      "source_location": "L231",
+      "id": "data_importdata",
+      "community": 0,
+      "norm_label": "importdata()"
+    },
+    {
+      "label": "manifest.json",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L1",
+      "id": "manifest",
+      "community": 5,
+      "norm_label": "manifest.json"
+    },
+    {
+      "label": "name",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L2",
+      "id": "manifest_name",
+      "community": 5,
+      "norm_label": "name"
+    },
+    {
+      "label": "short_name",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L3",
+      "id": "manifest_short_name",
+      "community": 5,
+      "norm_label": "short_name"
+    },
+    {
+      "label": "start_url",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L4",
+      "id": "manifest_start_url",
+      "community": 5,
+      "norm_label": "start_url"
+    },
+    {
+      "label": "display",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L5",
+      "id": "manifest_display",
+      "community": 5,
+      "norm_label": "display"
+    },
+    {
+      "label": "background_color",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L6",
+      "id": "manifest_background_color",
+      "community": 5,
+      "norm_label": "background_color"
+    },
+    {
+      "label": "theme_color",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L7",
+      "id": "manifest_theme_color",
+      "community": 5,
+      "norm_label": "theme_color"
+    },
+    {
+      "label": "icons",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L8",
+      "id": "manifest_icons",
+      "community": 5,
+      "norm_label": "icons"
+    },
+    {
+      "label": "sw.js",
+      "file_type": "code",
+      "source_file": "sw.js",
+      "source_location": "L1",
+      "id": "sw",
+      "community": 3,
+      "norm_label": "sw.js"
+    },
+    {
+      "label": "FILES",
+      "file_type": "code",
+      "source_file": "sw.js",
+      "source_location": "L2",
+      "id": "sw_files",
+      "community": 3,
+      "norm_label": "files"
+    },
+    {
+      "label": "data.js",
+      "type": "module",
+      "confidence": "EXTRACTED",
+      "description": "Core data layer module: localStorage persistence, GitHub Gist sync, employee CRUD, time tracking, PIN auth, export/import",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "data_js",
+      "community": 3,
+      "norm_label": "data.js"
+    },
+    {
+      "label": "DB_KEY (restaurant_v1)",
+      "type": "config",
+      "confidence": "EXTRACTED",
+      "description": "localStorage key for main restaurant data: employees, pointages, PIN hash, archives",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "db_key",
+      "community": 1,
+      "norm_label": "db_key (restaurant_v1)"
+    },
+    {
+      "label": "SYNC_KEY (restaurant_sync)",
+      "type": "config",
+      "confidence": "EXTRACTED",
+      "description": "localStorage key for GitHub Gist sync configuration (token, gistId, lastSync)",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "sync_key",
+      "community": 4,
+      "norm_label": "sync_key (restaurant_sync)"
+    },
+    {
+      "label": "load()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Reads and JSON-parses the main data object from localStorage using DB_KEY; returns default structure if empty",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_load",
+      "community": 1,
+      "norm_label": "load()"
+    },
+    {
+      "label": "save(data)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Serializes data to localStorage and debounces a 4-second timer to call syncToGist",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_save",
+      "community": 1,
+      "norm_label": "save(data)"
+    },
+    {
+      "label": "_syncTimer",
+      "type": "concept",
+      "confidence": "EXTRACTED",
+      "description": "Debounce timer handle used to delay Gist sync 4 seconds after the last save call",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "sync_timer",
+      "community": 1,
+      "norm_label": "_synctimer"
+    },
+    {
+      "label": "getSyncConfig()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Reads and parses the GitHub Gist sync config (token, gistId, lastSync) from localStorage",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_get_sync_config",
+      "community": 4,
+      "norm_label": "getsyncconfig()"
+    },
+    {
+      "label": "setSyncConfig(cfg)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Serializes and stores the sync config object into localStorage under SYNC_KEY",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_set_sync_config",
+      "community": 4,
+      "norm_label": "setsyncconfig(cfg)"
+    },
+    {
+      "label": "syncToGist(data)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Async: POSTs or PATCHes restaurant data to a GitHub Gist using token from sync config; creates gist if none exists; updates lastSync timestamp and sync badge",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_sync_to_gist",
+      "community": 4,
+      "norm_label": "synctogist(data)"
+    },
+    {
+      "label": "restoreFromGist()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Async: fetches restaurant-backup.json content from GitHub Gist and writes it to localStorage; returns true on success",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_restore_from_gist",
+      "community": 4,
+      "norm_label": "restorefromgist()"
+    },
+    {
+      "label": "setupSync(token)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Validates GitHub token against /user endpoint, persists sync config, and triggers initial syncToGist",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_setup_sync",
+      "community": 4,
+      "norm_label": "setupsync(token)"
+    },
+    {
+      "label": "updateSyncBadge(ok)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Updates the #sync-badge DOM element with cloud sync status icon and last-sync time",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_update_sync_badge",
+      "community": 4,
+      "norm_label": "updatesyncbadge(ok)"
+    },
+    {
+      "label": "hashPin(pin)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Async: SHA-256 hashes a numeric PIN string using Web Crypto API; returns hex string",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_hash_pin",
+      "community": 6,
+      "norm_label": "hashpin(pin)"
+    },
+    {
+      "label": "minutesDiff(debut, fin)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Calculates minute difference between two HH:MM time strings",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_minutes_diff",
+      "community": 2,
+      "norm_label": "minutesdiff(debut, fin)"
+    },
+    {
+      "label": "formatDuration(mins)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Converts total minutes to human-readable Xh00 string",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_format_duration",
+      "community": 2,
+      "norm_label": "formatduration(mins)"
+    },
+    {
+      "label": "today()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Returns current date as YYYY-MM-DD ISO string",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_today",
+      "community": 1,
+      "norm_label": "today()"
+    },
+    {
+      "label": "currentMonth()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Returns current year-month as YYYY-MM string",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_current_month",
+      "community": 8,
+      "norm_label": "currentmonth()"
+    },
+    {
+      "label": "formatDate(iso)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Converts YYYY-MM-DD to DD/MM/YYYY display format",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_format_date",
+      "community": 2,
+      "norm_label": "formatdate(iso)"
+    },
+    {
+      "label": "getEmployes()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Returns active employees sorted alphabetically by name",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_get_employes",
+      "community": 1,
+      "norm_label": "getemployes()"
+    },
+    {
+      "label": "addEmploye(nom)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Creates a new employee with timestamp ID, adds to data, and saves",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_add_employe",
+      "community": 1,
+      "norm_label": "addemploye(nom)"
+    },
+    {
+      "label": "renameEmploye(id, nom)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Finds employee by ID and updates their name, then saves",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_rename_employe",
+      "community": 1,
+      "norm_label": "renameemploye(id, nom)"
+    },
+    {
+      "label": "deleteEmploye(id)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Removes employee and all their pointage records by ID, then saves",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_delete_employe",
+      "community": 1,
+      "norm_label": "deleteemploye(id)"
+    },
+    {
+      "label": "getPointages(employeId, date)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Returns all service records (midi/soir) for an employee on a specific date",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_get_pointages",
+      "community": 2,
+      "norm_label": "getpointages(employeid, date)"
+    },
+    {
+      "label": "savePointage(employeId, date, service, heureDebut, heureFin, repasPris)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Writes a single service time entry (midi or soir) for an employee on a date; calls save()",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_save_pointage",
+      "community": 1,
+      "norm_label": "savepointage(employeid, date, service, heuredebut, heurefin, repaspris)"
+    },
+    {
+      "label": "calcRecap(mois)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Aggregates total hours and meal counts per active employee for a given month",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_calc_recap",
+      "community": 2,
+      "norm_label": "calcrecap(mois)"
+    },
+    {
+      "label": "verifyPin(pin)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Async: hashes input PIN and compares to stored hash; returns boolean",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_verify_pin",
+      "community": 6,
+      "norm_label": "verifypin(pin)"
+    },
+    {
+      "label": "changePin(ancienPin, nouveauPin)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Validates old PIN, enforces 6-digit rule on new PIN, updates stored PIN hash",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_change_pin",
+      "community": 1,
+      "norm_label": "changepin(ancienpin, nouveaupin)"
+    },
+    {
+      "label": "cloturerMois(mois)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Archives monthly recap data and deletes pointage entries for the closed month",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_cloturer_mois",
+      "community": 2,
+      "norm_label": "cloturermois(mois)"
+    },
+    {
+      "label": "exportData()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Creates a downloadable JSON blob of the full data store with today's date in filename",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_export_data",
+      "community": 1,
+      "norm_label": "exportdata()"
+    },
+    {
+      "label": "importData(file)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Reads a JSON file via FileReader and writes its content into localStorage",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "fn_import_data",
+      "community": 1,
+      "norm_label": "importdata(file)"
+    },
+    {
+      "label": "Data Schema",
+      "type": "concept",
+      "confidence": "EXTRACTED",
+      "description": "Root data object: { employes: [], pointages: {}, pin: <sha256-hex>, archives: [] }",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "data_schema",
+      "community": 1,
+      "norm_label": "data schema"
+    },
+    {
+      "label": "GitHub Gist API",
+      "type": "concept",
+      "confidence": "EXTRACTED",
+      "description": "External REST API used for cloud backup; endpoints: GET/PATCH /gists/:id, POST /gists, GET /user",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "github_gist_api",
+      "community": 4,
+      "norm_label": "github gist api"
+    },
+    {
+      "label": "localStorage",
+      "type": "concept",
+      "confidence": "EXTRACTED",
+      "description": "Browser storage used as primary database for employee, pointage, PIN, and sync config data",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "local_storage",
+      "community": 1,
+      "norm_label": "localstorage"
+    },
+    {
+      "label": "Web Crypto API",
+      "type": "concept",
+      "confidence": "EXTRACTED",
+      "description": "Browser crypto.subtle.digest used for SHA-256 PIN hashing",
+      "source_file": "data.js",
+      "file_type": "concept",
+      "id": "web_crypto",
+      "community": 6,
+      "norm_label": "web crypto api"
+    },
+    {
+      "label": "index.html",
+      "type": "module",
+      "confidence": "EXTRACTED",
+      "description": "Main PWA shell: all UI sections, navigation logic, and inline JavaScript application controller",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "index_html",
+      "community": 3,
+      "norm_label": "index.html"
+    },
+    {
+      "label": "Section: Home",
+      "type": "component",
+      "confidence": "EXTRACTED",
+      "description": "Landing page with two cards: enter hours (employees) and manager area (PIN); also link to change PIN",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "section_home",
+      "community": 13,
+      "norm_label": "section: home"
+    },
+    {
+      "label": "Section: Employes",
+      "type": "component",
+      "confidence": "EXTRACTED",
+      "description": "Employee list for time entry selection; includes add employee input field",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "section_employes",
+      "community": 12,
+      "norm_label": "section: employes"
+    },
+    {
+      "label": "Section: Saisie (Time Entry)",
+      "type": "component",
+      "confidence": "EXTRACTED",
+      "description": "Time entry form for midi and soir services per employee per day; date navigation arrows",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "section_saisie",
+      "community": 16,
+      "norm_label": "section: saisie (time entry)"
+    },
+    {
+      "label": "Section: PIN",
+      "type": "component",
+      "confidence": "EXTRACTED",
+      "description": "Password input screen for manager authentication with 6-digit numeric PIN",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "section_pin",
+      "community": 14,
+      "norm_label": "section: pin"
+    },
+    {
+      "label": "Section: Dashboard Responsable",
+      "type": "component",
+      "confidence": "EXTRACTED",
+      "description": "Manager dashboard: monthly recap table, export, print, change code, close month actions",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "section_responsable",
+      "community": 15,
+      "norm_label": "section: dashboard responsable"
+    },
+    {
+      "label": "Section: Employee Detail",
+      "type": "component",
+      "confidence": "EXTRACTED",
+      "description": "Per-employee detail view showing daily breakdown of hours and meals for current month",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "section_detail",
+      "community": 11,
+      "norm_label": "section: employee detail"
+    },
+    {
+      "label": "Section: Change PIN",
+      "type": "component",
+      "confidence": "EXTRACTED",
+      "description": "Form to change manager PIN code requiring old and new code fields",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "section_code",
+      "community": 10,
+      "norm_label": "section: change pin"
+    },
+    {
+      "label": "Section: Sync / Backup",
+      "type": "component",
+      "confidence": "EXTRACTED",
+      "description": "Settings panel with accordion sections for auto (GitHub Gist) and manual (file) backup",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "section_sync",
+      "community": 17,
+      "norm_label": "section: sync / backup"
+    },
+    {
+      "label": "Modal: Employee Deletion",
+      "type": "component",
+      "confidence": "EXTRACTED",
+      "description": "Confirmation modal requiring user to type employee name before deletion",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "modal_suppr",
+      "community": 7,
+      "norm_label": "modal: employee deletion"
+    },
+    {
+      "label": "#sync-badge",
+      "type": "component",
+      "confidence": "EXTRACTED",
+      "description": "Header UI element showing cloud sync status (last sync time or error icon)",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "sync_badge",
+      "community": 4,
+      "norm_label": "#sync-badge"
+    },
+    {
+      "label": "showSection(id)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Navigation controller: hides all sections, activates target section, calls section-specific render functions",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_show_section",
+      "community": 2,
+      "norm_label": "showsection(id)"
+    },
+    {
+      "label": "renderEmployes()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Renders employee list with Saisir and delete buttons",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_render_employes",
+      "community": 1,
+      "norm_label": "renderemployes()"
+    },
+    {
+      "label": "supprimerEmploye(id, nom)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Opens deletion confirmation modal with employee name",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_supprimer_employe",
+      "community": 7,
+      "norm_label": "supprimeremploye(id, nom)"
+    },
+    {
+      "label": "fermerModal()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Closes employee deletion modal and clears pending deletion state",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_fermer_modal",
+      "community": 1,
+      "norm_label": "fermermodal()"
+    },
+    {
+      "label": "confirmerSuppression()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Validates typed name matches employee name, then calls deleteEmploye and refreshes list",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_confirmer_suppression",
+      "community": 1,
+      "norm_label": "confirmersuppression()"
+    },
+    {
+      "label": "ajouterEmploye()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Reads new employee name input and calls addEmploye then re-renders list",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_ajouter_employe",
+      "community": 1,
+      "norm_label": "ajouteremploye()"
+    },
+    {
+      "label": "selectionnerEmploye(id, nom)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Sets currentEmployeId/Nom state and navigates to saisie section",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_selectionner_employe",
+      "community": 2,
+      "norm_label": "selectionneremploye(id, nom)"
+    },
+    {
+      "label": "renderSaisie()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Populates time entry form with existing pointage data or defaults for current employee and date",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_render_saisie",
+      "community": 2,
+      "norm_label": "rendersaisie()"
+    },
+    {
+      "label": "changerJour(delta)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Advances or rewinds currentDate by delta days and re-renders saisie",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_changer_jour",
+      "community": 2,
+      "norm_label": "changerjour(delta)"
+    },
+    {
+      "label": "sauvegarder()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Validates time entries for midi/soir, calls savePointage for each service, shows confirmation",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_sauvegarder",
+      "community": 1,
+      "norm_label": "sauvegarder()"
+    },
+    {
+      "label": "validerPin()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Reads PIN input, calls verifyPin; navigates to responsable section on success",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_valider_pin",
+      "community": 6,
+      "norm_label": "validerpin()"
+    },
+    {
+      "label": "renderRecap()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Renders monthly summary table using calcRecap data; shows employee hours and meals",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_render_recap",
+      "community": 2,
+      "norm_label": "renderrecap()"
+    },
+    {
+      "label": "changerMois(delta)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Adjusts currentMois by delta months and re-renders recap",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_changer_mois",
+      "community": 2,
+      "norm_label": "changermois(delta)"
+    },
+    {
+      "label": "voirDetail(id, nom)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Renders per-day detail for an employee and navigates to section-detail",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_voir_detail",
+      "community": 2,
+      "norm_label": "voirdetail(id, nom)"
+    },
+    {
+      "label": "cloturerMoisAction()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Confirms with user then calls cloturerMois, rolls currentMois back to previous month",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_cloturer_mois_action",
+      "community": 2,
+      "norm_label": "cloturermoisaction()"
+    },
+    {
+      "label": "changerCode()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Reads old and new PIN fields, calls changePin; shows success or error alert",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_changer_code",
+      "community": 1,
+      "norm_label": "changercode()"
+    },
+    {
+      "label": "exportTableau()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Generates styled HTML report of monthly recap, opens in new tab as Blob URL",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_export_tableau",
+      "community": 2,
+      "norm_label": "exporttableau()"
+    },
+    {
+      "label": "toggleAccordion(id)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Toggles open/closed CSS class on accordion body and updates icon",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_toggle_accordion",
+      "community": 9,
+      "norm_label": "toggleaccordion(id)"
+    },
+    {
+      "label": "renderSyncStatus()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Displays current sync config status (active with last sync time or unconfigured)",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_render_sync_status",
+      "community": 4,
+      "norm_label": "rendersyncstatus()"
+    },
+    {
+      "label": "activerSync()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Reads GitHub token input, calls setupSync; updates UI on success or shows error",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_activer_sync",
+      "community": 4,
+      "norm_label": "activersync()"
+    },
+    {
+      "label": "restaurerDepuisGist()",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Calls restoreFromGist and shows result alert in sync section",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_restaurer_depuis_gist",
+      "community": 4,
+      "norm_label": "restaurerdepuisgist()"
+    },
+    {
+      "label": "importerFichier(input)",
+      "type": "function",
+      "confidence": "EXTRACTED",
+      "description": "Handles file input change event, calls importData with selected file",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "fn_importer_fichier",
+      "community": 1,
+      "norm_label": "importerfichier(input)"
+    },
+    {
+      "label": "App State Variables",
+      "type": "concept",
+      "confidence": "EXTRACTED",
+      "description": "currentEmployeId, currentEmployeNom, currentDate, currentMois \u2014 navigation and selection state",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "app_state",
+      "community": 2,
+      "norm_label": "app state variables"
+    },
+    {
+      "label": "DEFAULTS (Service Times)",
+      "type": "config",
+      "confidence": "EXTRACTED",
+      "description": "Default time slots: midi 11:00-15:00, soir 19:00-23:00",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "service_defaults",
+      "community": 2,
+      "norm_label": "defaults (service times)"
+    },
+    {
+      "label": "sw.js (Service Worker)",
+      "type": "module",
+      "confidence": "EXTRACTED",
+      "description": "Service worker providing offline caching for all PWA assets; cache-first fetch strategy",
+      "source_file": "sw.js",
+      "file_type": "concept",
+      "id": "sw_js",
+      "community": 3,
+      "norm_label": "sw.js (service worker)"
+    },
+    {
+      "label": "CACHE (pointage-v5)",
+      "type": "config",
+      "confidence": "EXTRACTED",
+      "description": "Cache storage name; version bump clears old caches on activate",
+      "source_file": "sw.js",
+      "file_type": "concept",
+      "id": "sw_cache_name",
+      "community": 3,
+      "norm_label": "cache (pointage-v5)"
+    },
+    {
+      "label": "SW install event",
+      "type": "concept",
+      "confidence": "EXTRACTED",
+      "description": "Opens cache and adds all FILES; calls skipWaiting to activate immediately",
+      "source_file": "sw.js",
+      "file_type": "concept",
+      "id": "sw_install_event",
+      "community": 3,
+      "norm_label": "sw install event"
+    },
+    {
+      "label": "SW activate event",
+      "type": "concept",
+      "confidence": "EXTRACTED",
+      "description": "Deletes all old caches that don't match current CACHE name; claims clients",
+      "source_file": "sw.js",
+      "file_type": "concept",
+      "id": "sw_activate_event",
+      "community": 3,
+      "norm_label": "sw activate event"
+    },
+    {
+      "label": "SW fetch event",
+      "type": "concept",
+      "confidence": "EXTRACTED",
+      "description": "Cache-first strategy: returns cached response or falls back to network fetch",
+      "source_file": "sw.js",
+      "file_type": "concept",
+      "id": "sw_fetch_event",
+      "community": 3,
+      "norm_label": "sw fetch event"
+    },
+    {
+      "label": "manifest.json (PWA Manifest)",
+      "type": "config",
+      "confidence": "EXTRACTED",
+      "description": "Web App Manifest: name=Pointage Restaurant, standalone display, dark theme #1a1a2e, SVG icon",
+      "source_file": "manifest.json",
+      "file_type": "concept",
+      "id": "manifest_json",
+      "community": 3,
+      "norm_label": "manifest.json (pwa manifest)"
+    },
+    {
+      "label": "icon.svg",
+      "type": "component",
+      "confidence": "EXTRACTED",
+      "description": "PWA app icon: 100x100 rounded rectangle with dark background (#1a1a2e) and restaurant emoji",
+      "source_file": "icon.svg",
+      "file_type": "concept",
+      "id": "icon_svg",
+      "community": 3,
+      "norm_label": "icon.svg"
+    },
+    {
+      "label": "Restaurant PWA App",
+      "type": "concept",
+      "confidence": "EXTRACTED",
+      "description": "Installable Progressive Web App for restaurant employee time tracking with offline support",
+      "source_file": "index.html",
+      "file_type": "concept",
+      "id": "pwa_app",
+      "community": 3,
+      "norm_label": "restaurant pwa app"
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L130",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_addemploye",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L170",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_calcrecap",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L197",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_changepin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L207",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_cloturermois",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L114",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_currentmonth",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L145",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_deleteemploye",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L223",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_exportdata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L119",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_formatdate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L104",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_formatduration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L126",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_getemployes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L154",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_getpointages",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_getsyncconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L93",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_hashpin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L231",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_importdata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L98",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_minutesdiff",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L138",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_renameemploye",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L54",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_restorefromgist",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_save",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L159",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_savepointage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_setsyncconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_setupsync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_synctogist",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L109",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_today",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L76",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_updatesyncbadge",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L192",
+      "weight": 1.0,
+      "source": "data",
+      "target": "data_verifypin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L131",
+      "weight": 1.0,
+      "source": "data_addemploye",
+      "target": "data_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L171",
+      "weight": 1.0,
+      "source": "data_calcrecap",
+      "target": "data_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L199",
+      "weight": 1.0,
+      "source": "data_changepin",
+      "target": "data_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L208",
+      "weight": 1.0,
+      "source": "data_cloturermois",
+      "target": "data_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L146",
+      "weight": 1.0,
+      "source": "data_deleteemploye",
+      "target": "data_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L224",
+      "weight": 1.0,
+      "source": "data_exportdata",
+      "target": "data_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L127",
+      "weight": 1.0,
+      "source": "data_getemployes",
+      "target": "data_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L155",
+      "weight": 1.0,
+      "source": "data_getpointages",
+      "target": "data_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L139",
+      "weight": 1.0,
+      "source": "data_renameemploye",
+      "target": "data_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L161",
+      "weight": 1.0,
+      "source": "data_savepointage",
+      "target": "data_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L73",
+      "weight": 1.0,
+      "source": "data_setupsync",
+      "target": "data_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L193",
+      "weight": 1.0,
+      "source": "data_verifypin",
+      "target": "data_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L134",
+      "weight": 1.0,
+      "source": "data_addemploye",
+      "target": "data_save",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L202",
+      "weight": 1.0,
+      "source": "data_changepin",
+      "target": "data_save",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L218",
+      "weight": 1.0,
+      "source": "data_cloturermois",
+      "target": "data_save",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L149",
+      "weight": 1.0,
+      "source": "data_deleteemploye",
+      "target": "data_save",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L142",
+      "weight": 1.0,
+      "source": "data_renameemploye",
+      "target": "data_save",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L165",
+      "weight": 1.0,
+      "source": "data_savepointage",
+      "target": "data_save",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L55",
+      "weight": 1.0,
+      "source": "data_restorefromgist",
+      "target": "data_getsyncconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L71",
+      "weight": 1.0,
+      "source": "data_setupsync",
+      "target": "data_getsyncconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "data_synctogist",
+      "target": "data_getsyncconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L79",
+      "weight": 1.0,
+      "source": "data_updatesyncbadge",
+      "target": "data_getsyncconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "data_setupsync",
+      "target": "data_setsyncconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "data_synctogist",
+      "target": "data_setsyncconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L73",
+      "weight": 1.0,
+      "source": "data_setupsync",
+      "target": "data_synctogist",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "data_synctogist",
+      "target": "data_updatesyncbadge",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L200",
+      "weight": 1.0,
+      "source": "data_changepin",
+      "target": "data_hashpin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L194",
+      "weight": 1.0,
+      "source": "data_verifypin",
+      "target": "data_hashpin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L227",
+      "weight": 1.0,
+      "source": "data_exportdata",
+      "target": "data_today",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "data.js",
+      "source_location": "L209",
+      "weight": 1.0,
+      "source": "data_cloturermois",
+      "target": "data_calcrecap",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "manifest",
+      "target": "manifest_background_color",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "manifest",
+      "target": "manifest_display",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "manifest",
+      "target": "manifest_icons",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "manifest",
+      "target": "manifest_name",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "manifest",
+      "target": "manifest_short_name",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "manifest",
+      "target": "manifest_start_url",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "manifest",
+      "target": "manifest_theme_color",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "sw.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "sw",
+      "target": "sw_files",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "sw_install_event",
+      "target": "sw_files",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "sw_js",
+      "target": "sw_files",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source": "index_html",
+      "target": "data_js",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "fn_import_data",
+      "target": "db_key",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "fn_load",
+      "target": "db_key",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "fn_save",
+      "target": "db_key",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "fn_get_sync_config",
+      "target": "sync_key",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "fn_set_sync_config",
+      "target": "sync_key",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_add_employe",
+      "target": "fn_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_calc_recap",
+      "target": "fn_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_change_pin",
+      "target": "fn_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_cloturer_mois",
+      "target": "fn_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_delete_employe",
+      "target": "fn_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_export_data",
+      "target": "fn_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_get_employes",
+      "target": "fn_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_get_pointages",
+      "target": "fn_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "loads",
+      "confidence": "EXTRACTED",
+      "source": "fn_load",
+      "target": "data_schema",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "loads",
+      "confidence": "EXTRACTED",
+      "source": "fn_load",
+      "target": "local_storage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_rename_employe",
+      "target": "fn_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_save_pointage",
+      "target": "fn_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_setup_sync",
+      "target": "fn_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_verify_pin",
+      "target": "fn_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_add_employe",
+      "target": "fn_save",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_change_pin",
+      "target": "fn_save",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_cloturer_mois",
+      "target": "fn_save",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_delete_employe",
+      "target": "fn_save",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_rename_employe",
+      "target": "fn_save",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "saves",
+      "confidence": "EXTRACTED",
+      "source": "fn_save",
+      "target": "data_schema",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_save",
+      "target": "fn_sync_to_gist",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "saves",
+      "confidence": "EXTRACTED",
+      "source": "fn_save",
+      "target": "local_storage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "fn_save",
+      "target": "sync_timer",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_save_pointage",
+      "target": "fn_save",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "loads",
+      "confidence": "EXTRACTED",
+      "source": "fn_get_sync_config",
+      "target": "local_storage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_render_sync_status",
+      "target": "fn_get_sync_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_restore_from_gist",
+      "target": "fn_get_sync_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_setup_sync",
+      "target": "fn_get_sync_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_sync_to_gist",
+      "target": "fn_get_sync_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_update_sync_badge",
+      "target": "fn_get_sync_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "saves",
+      "confidence": "EXTRACTED",
+      "source": "fn_set_sync_config",
+      "target": "local_storage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_setup_sync",
+      "target": "fn_set_sync_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_sync_to_gist",
+      "target": "fn_set_sync_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_setup_sync",
+      "target": "fn_sync_to_gist",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_sync_to_gist",
+      "target": "fn_update_sync_badge",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "fn_sync_to_gist",
+      "target": "github_gist_api",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_restaurer_depuis_gist",
+      "target": "fn_restore_from_gist",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "fn_restore_from_gist",
+      "target": "github_gist_api",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "saves",
+      "confidence": "EXTRACTED",
+      "source": "fn_restore_from_gist",
+      "target": "local_storage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_activer_sync",
+      "target": "fn_setup_sync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_activer_sync",
+      "target": "fn_update_sync_badge",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "renders",
+      "confidence": "EXTRACTED",
+      "source": "fn_update_sync_badge",
+      "target": "sync_badge",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_change_pin",
+      "target": "fn_hash_pin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "fn_hash_pin",
+      "target": "web_crypto",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_verify_pin",
+      "target": "fn_hash_pin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_calc_recap",
+      "target": "fn_minutes_diff",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_export_tableau",
+      "target": "fn_minutes_diff",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_voir_detail",
+      "target": "fn_minutes_diff",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_calc_recap",
+      "target": "fn_format_duration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_export_tableau",
+      "target": "fn_format_duration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_voir_detail",
+      "target": "fn_format_duration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_export_data",
+      "target": "fn_today",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_export_tableau",
+      "target": "fn_format_date",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_render_saisie",
+      "target": "fn_format_date",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_voir_detail",
+      "target": "fn_format_date",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_render_employes",
+      "target": "fn_get_employes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_ajouter_employe",
+      "target": "fn_add_employe",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_confirmer_suppression",
+      "target": "fn_delete_employe",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_render_saisie",
+      "target": "fn_get_pointages",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_sauvegarder",
+      "target": "fn_save_pointage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_cloturer_mois",
+      "target": "fn_calc_recap",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_export_tableau",
+      "target": "fn_calc_recap",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_render_recap",
+      "target": "fn_calc_recap",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_voir_detail",
+      "target": "fn_calc_recap",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_valider_pin",
+      "target": "fn_verify_pin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_changer_code",
+      "target": "fn_change_pin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_cloturer_mois_action",
+      "target": "fn_cloturer_mois",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "saves",
+      "confidence": "EXTRACTED",
+      "source": "fn_import_data",
+      "target": "local_storage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_importer_fichier",
+      "target": "fn_import_data",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "saves",
+      "confidence": "EXTRACTED",
+      "source": "data_schema",
+      "target": "local_storage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "index_html",
+      "target": "manifest_json",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "pwa_app",
+      "target": "index_html",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "renders",
+      "confidence": "EXTRACTED",
+      "source": "fn_supprimer_employe",
+      "target": "modal_suppr",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_selectionner_employe",
+      "target": "fn_show_section",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_show_section",
+      "target": "fn_render_employes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_show_section",
+      "target": "fn_render_recap",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_show_section",
+      "target": "fn_render_saisie",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_show_section",
+      "target": "fn_render_sync_status",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_valider_pin",
+      "target": "fn_show_section",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_voir_detail",
+      "target": "fn_show_section",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_ajouter_employe",
+      "target": "fn_render_employes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_confirmer_suppression",
+      "target": "fn_render_employes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_confirmer_suppression",
+      "target": "fn_fermer_modal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "configures",
+      "confidence": "EXTRACTED",
+      "source": "fn_selectionner_employe",
+      "target": "app_state",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_changer_jour",
+      "target": "fn_render_saisie",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "fn_render_saisie",
+      "target": "service_defaults",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_changer_mois",
+      "target": "fn_render_recap",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_cloturer_mois_action",
+      "target": "fn_render_recap",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source": "fn_activer_sync",
+      "target": "fn_render_sync_status",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "pwa_app",
+      "target": "sw_js",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "sw_js",
+      "target": "sw_cache_name",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "sw_activate_event",
+      "target": "sw_cache_name",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "sw_fetch_event",
+      "target": "sw_cache_name",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "manifest_json",
+      "target": "icon_svg",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "source": "pwa_app",
+      "target": "manifest_json",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "save_flow",
+      "label": "savePointage \u2192 save \u2192 syncToGist data flow",
+      "nodes": [
+        "fn_save_pointage",
+        "fn_save",
+        "fn_sync_to_gist",
+        "github_gist_api",
+        "local_storage"
+      ],
+      "relation": "data_flow",
+      "description": "Complete write path: time entry saved locally then async-synced to GitHub Gist after 4s debounce"
+    },
+    {
+      "id": "pin_auth_flow",
+      "label": "PIN authentication flow",
+      "nodes": [
+        "section_pin",
+        "fn_valider_pin",
+        "fn_verify_pin",
+        "fn_hash_pin",
+        "web_crypto",
+        "section_responsable"
+      ],
+      "relation": "auth_flow",
+      "description": "User enters PIN \u2192 validerPin \u2192 verifyPin hashes with SHA-256 \u2192 compare to stored hash \u2192 unlock manager dashboard"
+    },
+    {
+      "id": "employee_crud_flow",
+      "label": "Employee CRUD operations",
+      "nodes": [
+        "fn_add_employe",
+        "fn_rename_employe",
+        "fn_delete_employe",
+        "fn_get_employes",
+        "fn_load",
+        "fn_save",
+        "local_storage"
+      ],
+      "relation": "crud_flow",
+      "description": "All employee operations load from localStorage, mutate the data object, and save back"
+    },
+    {
+      "id": "gist_sync_setup",
+      "label": "GitHub Gist sync setup and restore",
+      "nodes": [
+        "fn_setup_sync",
+        "fn_sync_to_gist",
+        "fn_restore_from_gist",
+        "fn_get_sync_config",
+        "fn_set_sync_config",
+        "github_gist_api"
+      ],
+      "relation": "sync_flow",
+      "description": "Token validated \u2192 config stored \u2192 initial sync triggered; restore reads backup from Gist into localStorage"
+    }
+  ],
+  "built_at_commit": "522c2ebacd955eb68dd272779ef308ca1431a536"
+}

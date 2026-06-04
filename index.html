@@ -104,6 +104,7 @@
       </div>
       <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
         <button class="btn btn-secondary btn-sm" onclick="exportTableau()">📊 Tableau</button>
+        <button class="btn btn-secondary btn-sm" onclick="showSection('section-semaines');renderSemaines()">📅 Semaines</button>
         <button class="btn btn-secondary btn-sm" onclick="window.print()">Imprimer</button>
         <button class="btn btn-secondary btn-sm" onclick="showSection('section-code')">🔑 Code PIN</button>
         <button class="btn btn-secondary btn-sm" onclick="showSection('section-sync')">⚙️ Réglages</button>
@@ -114,6 +115,19 @@
     <div id="recap-content"></div>
 
     <button class="btn btn-secondary btn-block no-print" onclick="showSection('section-home')" style="margin-top:0.5rem">← Accueil</button>
+  </div>
+
+  <!-- Semaines -->
+  <div id="section-semaines" class="section">
+    <div class="card no-print">
+      <div class="month-nav">
+        <button onclick="changerMois(-1, renderSemaines)">‹</button>
+        <span id="sem-mois"></span>
+        <button onclick="changerMois(+1, renderSemaines)">›</button>
+      </div>
+    </div>
+    <div id="sem-content"></div>
+    <button class="btn btn-secondary btn-block" onclick="showSection('section-responsable')">← Récap mensuel</button>
   </div>
 
   <!-- Détail employé -->
@@ -228,7 +242,7 @@ function renderEmployes() {
   liste.innerHTML = employes.map(e => `
     <div class="employe-item">
       <span class="employe-nom">${e.nom}</span>
-      <button class="btn btn-primary btn-sm" onclick="selectionnerEmploye(${e.id}, '${e.nom.replace(/'/g, "\\'")}')">Saisir</button>
+      <button class="btn btn-primary" onclick="selectionnerEmploye(${e.id}, '${e.nom.replace(/'/g, "\\'")}')">Saisir</button>
       <button class="btn btn-secondary btn-sm" style="color:#c62828" onclick="supprimerEmploye(${e.id}, '${e.nom.replace(/'/g, "\\'")}')">✕</button>
     </div>
   `).join('');
@@ -406,25 +420,102 @@ function renderRecap() {
   container.innerHTML = `
     <div class="card" style="padding:0.4rem 0.6rem">
       ${recap.map(e => `
-        <div class="recap-emp-row" onclick="voirDetail(${e.id},'${e.nom.replace(/'/g,"\\'")}')">
+        <div class="recap-emp-row">
           <div class="recap-emp-av">${e.nom.charAt(0).toUpperCase()}</div>
           <div class="recap-emp-info">
             <div class="recap-emp-nom">${e.nom}</div>
-            <div class="recap-emp-sub">${e.totalRepas > 0 ? `${e.totalRepas} repas` : 'Aucun repas'}</div>
           </div>
           <div class="recap-emp-h">${e.totalHeures}</div>
-          <div class="recap-emp-arr">›</div>
         </div>
       `).join('')}
     </div>
   `;
 }
 
-function changerMois(delta) {
+function changerMois(delta, callback) {
   const [y, m] = currentMois.split('-').map(Number);
   const d = new Date(y, m - 1 + delta, 1);
   currentMois = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-  renderRecap();
+  (callback || renderRecap)();
+}
+
+function toISO(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getWeeksOfMonth(mois) {
+  const [y, m] = mois.split('-').map(Number);
+  const firstDay = new Date(y, m - 1, 1);
+  const lastDay = new Date(y, m, 0);
+  const weeks = [];
+  let curr = new Date(firstDay);
+  const dow = curr.getDay();
+  curr.setDate(curr.getDate() - (dow === 0 ? 6 : dow - 1));
+  let n = 1;
+  while (curr <= lastDay) {
+    const wEnd = new Date(curr);
+    wEnd.setDate(wEnd.getDate() + 6);
+    const visStart = curr < firstDay ? firstDay : curr;
+    const visEnd = wEnd > lastDay ? lastDay : wEnd;
+    const fmt = dt => `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}`;
+    weeks.push({ label: `S${n}`, sublabel: `${fmt(visStart)}-${fmt(visEnd)}`, startIso: toISO(curr), endIso: toISO(wEnd) });
+    curr.setDate(curr.getDate() + 7);
+    n++;
+  }
+  return weeks;
+}
+
+function renderSemaines() {
+  const [annee, moisNum] = currentMois.split('-');
+  const noms = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  document.getElementById('sem-mois').textContent = `${noms[parseInt(moisNum)-1]} ${annee}`;
+  const recap = calcRecap(currentMois);
+  const weeks = getWeeksOfMonth(currentMois);
+  const container = document.getElementById('sem-content');
+  if (recap.length === 0) {
+    container.innerHTML = '<div class="card"><p style="color:var(--muted)">Aucun employé.</p></div>';
+    return;
+  }
+  const rows = recap.map(emp => {
+    const weekMins = weeks.map(w => {
+      let mins = 0;
+      for (const [date, services] of Object.entries(emp.detail)) {
+        if (date >= w.startIso && date <= w.endIso) {
+          for (const s of ['midi', 'soir']) {
+            const p = services[s];
+            if (p?.heureDebut && p?.heureFin) mins += minutesDiff(p.heureDebut, p.heureFin);
+          }
+        }
+      }
+      return mins;
+    });
+    return { nom: emp.nom, weekMins, totalMins: weekMins.reduce((a, b) => a + b, 0) };
+  });
+  const thBase = `padding:0.55rem 0.6rem;background:var(--primary);color:white;font-size:0.78rem;font-weight:600;text-align:center;white-space:nowrap;border-bottom:none`;
+  container.innerHTML = `
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:0.88rem;min-width:${220 + weeks.length * 72}px">
+          <thead>
+            <tr>
+              <th style="${thBase};text-align:left;padding-left:0.9rem">Employé</th>
+              ${weeks.map(w => `<th style="${thBase}"><div>${w.label}</div><div style="font-weight:400;font-size:0.68rem;opacity:0.7;margin-top:0.1rem">${w.sublabel}</div></th>`).join('')}
+              <th style="${thBase}">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((r, i) => `
+              <tr style="${i % 2 === 1 ? 'background:#f8fafc' : ''}">
+                <td style="padding:0.65rem 0.9rem;font-weight:600;color:var(--text);border-bottom:1px solid var(--border)">${r.nom}</td>
+                ${r.weekMins.map(m => `<td style="padding:0.65rem 0.6rem;text-align:center;font-weight:${m > 0 ? '700' : '400'};color:${m > 0 ? 'var(--accent)' : 'var(--muted)'};border-bottom:1px solid var(--border)">${m > 0 ? formatDuration(m) : '—'}</td>`).join('')}
+                <td style="padding:0.65rem 0.6rem;text-align:center;font-weight:700;color:var(--primary);border-bottom:1px solid var(--border)">${r.totalMins > 0 ? formatDuration(r.totalMins) : '—'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
 }
 
 function voirDetail(id, nom) {
@@ -491,10 +582,6 @@ function exportTableau() {
   const [annee, moisNum] = currentMois.split('-');
   const noms = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
   const nomMois = `${noms[parseInt(moisNum)-1]} ${annee}`;
-
-  const totalMinutes = recap.reduce((s, e) => s + e.totalMinutes, 0);
-  const totalRepas = recap.reduce((s, e) => s + e.totalRepas, 0);
-  const actifs = recap.filter(e => e.totalMinutes > 0 || e.totalRepas > 0).length;
 
   const lignesSommaire = recap.map(e => {
     const jours = Object.keys(e.detail).length;
@@ -656,21 +743,6 @@ function exportTableau() {
     <div>
       <div class="page-title">Récapitulatif — ${nomMois}</div>
       <div class="page-meta">Généré le ${new Date().toLocaleDateString('fr', {day:'2-digit', month:'long', year:'numeric'})}</div>
-    </div>
-  </div>
-
-  <div class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-value">${formatDuration(totalMinutes)}</div>
-      <div class="kpi-label">Total heures</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-value">${totalRepas}</div>
-      <div class="kpi-label">Repas</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-value">${actifs}</div>
-      <div class="kpi-label">Employés</div>
     </div>
   </div>
 

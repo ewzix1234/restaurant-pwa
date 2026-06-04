@@ -298,12 +298,7 @@ label {
   gap: 0.7rem;
   padding: 0.65rem 0.5rem;
   border-radius: 10px;
-  cursor: pointer;
-  touch-action: manipulation;
-  transition: background var(--t), transform var(--t);
-  -webkit-tap-highlight-color: transparent;
 }
-.recap-emp-row:active { background: #f1f5f9; transform: scale(0.99); }
 
 .recap-emp-av {
   width: 36px;

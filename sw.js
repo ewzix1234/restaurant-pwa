@@ -1,4 +1,4 @@
-const CACHE = 'pointage-v1';
+const CACHE = 'pointage-v2';
 const FILES = ['.', 'index.html', 'style.css', 'data.js', 'manifest.json', 'icon.svg'];
 
 self.addEventListener('install', e => {

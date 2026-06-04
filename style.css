@@ -90,8 +90,9 @@ label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 
 
 .field { margin-bottom: 0.8rem; }
 
-.row { display: flex; gap: 0.6rem; }
-.row .field { flex: 1; min-width: 0; }
+.row { display: flex; gap: 0.5rem; }
+.row .field { flex: 1; min-width: 0; overflow: hidden; }
+.row input[type="time"] { padding-left: 0.4rem; padding-right: 0.4rem; }
 
 .employe-item {
   display: flex;

@@ -225,11 +225,20 @@ function calcCongesDuMois(empId, mois) {
     const date = `${mois}-${String(d).padStart(2,'0')}`;
     const explicit = ((data.conges || {})[empId] || {})[date];
     let isConge;
-    if (explicit === true) isConge = true;
-    else if (explicit === false) isConge = false;
-    else {
+    if (explicit === true) {
+      isConge = true;
+    } else if (explicit === false) {
+      isConge = false;
+    } else {
       const dow = new Date(date + 'T12:00:00').getDay();
-      isConge = (emp.joursConge || []).includes(dow);
+      if ((emp.joursConge || []).includes(dow)) {
+        // Jour de congé habituel — annulé si des heures ont été saisies
+        const pts = (data.pointages[empId] || {})[date] || {};
+        const aDesHeures = ['midi', 'soir'].some(s => pts[s]?.heureDebut && pts[s]?.heureFin);
+        isConge = !aDesHeures;
+      } else {
+        isConge = false;
+      }
     }
     if (isConge) count++;
   }

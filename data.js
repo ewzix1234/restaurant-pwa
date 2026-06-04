@@ -1,12 +1,94 @@
 const DB_KEY = 'restaurant_v1';
+const SYNC_KEY = 'restaurant_sync';
+
+// ── Stockage local ────────────────────────────────────────
 
 function load() {
   return JSON.parse(localStorage.getItem(DB_KEY) || '{"employes":[],"pointages":{},"pin":"91b4d142823f7d20c5f08df69122de43f35f057a988d9619f6d3138485c9a203","archives":[]}');
 }
 
+let _syncTimer = null;
 function save(data) {
   localStorage.setItem(DB_KEY, JSON.stringify(data));
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(() => syncToGist(data), 4000);
 }
+
+// ── Sync GitHub Gist ──────────────────────────────────────
+
+function getSyncConfig() {
+  return JSON.parse(localStorage.getItem(SYNC_KEY) || 'null');
+}
+
+function setSyncConfig(cfg) {
+  localStorage.setItem(SYNC_KEY, JSON.stringify(cfg));
+}
+
+async function syncToGist(data) {
+  const cfg = getSyncConfig();
+  if (!cfg?.token) return;
+  const headers = { 'Authorization': `token ${cfg.token}`, 'Content-Type': 'application/json' };
+  const body = { files: { 'restaurant-backup.json': { content: JSON.stringify(data) } } };
+  try {
+    let gistId = cfg.gistId;
+    if (gistId) {
+      const r = await fetch(`https://api.github.com/gists/${gistId}`, { method: 'PATCH', headers, body: JSON.stringify(body) });
+      if (r.status === 404) gistId = null;
+    }
+    if (!gistId) {
+      const r = await fetch('https://api.github.com/gists', {
+        method: 'POST', headers,
+        body: JSON.stringify({ ...body, description: 'Restaurant Pointage Backup', public: false })
+      });
+      const g = await r.json();
+      gistId = g.id;
+      setSyncConfig({ ...cfg, gistId });
+    }
+    setSyncConfig({ ...getSyncConfig(), lastSync: new Date().toISOString() });
+    updateSyncBadge(true);
+  } catch {
+    updateSyncBadge(false);
+  }
+}
+
+async function restoreFromGist() {
+  const cfg = getSyncConfig();
+  if (!cfg?.token || !cfg?.gistId) return false;
+  try {
+    const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+      headers: { 'Authorization': `token ${cfg.token}` }
+    });
+    const g = await r.json();
+    const content = g.files?.['restaurant-backup.json']?.content;
+    if (content) { localStorage.setItem(DB_KEY, content); return true; }
+  } catch {}
+  return false;
+}
+
+async function setupSync(token) {
+  const r = await fetch('https://api.github.com/user', { headers: { 'Authorization': `token ${token}` } });
+  if (!r.ok) throw new Error('Token invalide');
+  const existing = getSyncConfig();
+  setSyncConfig({ token, gistId: existing?.gistId || null });
+  await syncToGist(load());
+}
+
+function updateSyncBadge(ok) {
+  const el = document.getElementById('sync-badge');
+  if (!el) return;
+  const cfg = getSyncConfig();
+  if (!cfg?.token) { el.textContent = ''; return; }
+  if (ok) {
+    const t = cfg.lastSync ? new Date(cfg.lastSync).toLocaleTimeString('fr', { hour: '2-digit', minute: '2-digit' }) : '';
+    el.textContent = `☁ ${t}`;
+    el.style.color = '#4caf50';
+  } else {
+    el.textContent = '☁ ✗';
+    el.style.color = '#f44336';
+  }
+}
+
+// ── Utilitaires ───────────────────────────────────────────
 
 async function hashPin(pin) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(pin)));
@@ -127,4 +209,28 @@ function cloturerMois(mois) {
     }
   }
   save(data);
+}
+
+// ── Export / Import manuel ────────────────────────────────
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(load(), null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `restaurant-backup-${today()}.json`;
+  a.click();
+}
+
+function importData(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        localStorage.setItem(DB_KEY, JSON.stringify(data));
+        resolve();
+      } catch { reject(new Error('Fichier invalide')); }
+    };
+    reader.readAsText(file);
+  });
 }

@@ -14,6 +14,8 @@
 <body>
 <header>
   <h1>Pointage Restaurant</h1>
+  <span id="sync-badge" style="font-size:0.75rem;margin-right:0.3rem"></span>
+  <a href="#" onclick="showSection('section-sync');return false" style="font-size:1.2rem;text-decoration:none" title="Sauvegarde">⚙️</a>
 </header>
 
 <div class="container">
@@ -139,6 +141,35 @@
     <button class="btn btn-secondary btn-block" onclick="showSection('section-responsable')">← Retour</button>
   </div>
 
+  <!-- Sauvegarde automatique -->
+  <div id="section-sync" class="section">
+    <div class="card">
+      <h2 style="margin-bottom:0.3rem;font-size:1rem">☁ Sauvegarde automatique</h2>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem">Les données sont envoyées sur GitHub après chaque saisie. Configurez une seule fois.</p>
+      <div id="alert-sync" class="alert"></div>
+      <div id="sync-status-detail" style="margin-bottom:0.8rem;font-size:0.85rem"></div>
+      <div class="field">
+        <label>Token GitHub (scope : gist)</label>
+        <input type="password" id="github-token" placeholder="ghp_...">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="activerSync()">Activer la sauvegarde auto</button>
+      <button class="btn btn-secondary btn-block" style="margin-top:0.5rem" onclick="restaurerDepuisGist()">Restaurer depuis le cloud</button>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom:0.8rem;font-size:1rem">📁 Sauvegarde manuelle</h2>
+      <div style="display:flex;gap:0.5rem">
+        <button class="btn btn-secondary" style="flex:1" onclick="exportData()">Exporter fichier</button>
+        <label class="btn btn-secondary" style="flex:1;text-align:center;cursor:pointer">
+          Importer fichier
+          <input type="file" accept=".json" style="display:none" onchange="importerFichier(this)">
+        </label>
+      </div>
+    </div>
+
+    <button class="btn btn-secondary btn-block" onclick="showSection('section-home')">← Accueil</button>
+  </div>
+
 </div>
 
 <script src="data.js"></script>
@@ -156,6 +187,7 @@ function showSection(id) {
   if (id === 'section-employes') renderEmployes();
   if (id === 'section-saisie') renderSaisie();
   if (id === 'section-responsable') renderRecap();
+  if (id === 'section-sync') { renderSyncStatus(); document.getElementById('alert-sync').style.display='none'; }
   if (id === 'section-pin') {
     document.getElementById('pin-input').value = '';
     document.getElementById('alert-pin').style.display = 'none';
@@ -356,6 +388,60 @@ async function changerCode() {
   }
 }
 
+// ── Sync / Sauvegarde ─────────────────────────────────────
+
+function renderSyncStatus() {
+  const cfg = getSyncConfig();
+  const el = document.getElementById('sync-status-detail');
+  if (!el) return;
+  if (!cfg?.token) {
+    el.innerHTML = '<span style="color:var(--muted)">Aucune sauvegarde cloud configurée.</span>';
+    return;
+  }
+  const last = cfg.lastSync ? new Date(cfg.lastSync).toLocaleString('fr') : 'jamais';
+  el.innerHTML = `<span style="color:#4caf50">✓ Sauvegarde active</span><br><small style="color:var(--muted)">Dernière sync : ${last}</small>`;
+}
+
+async function activerSync() {
+  const token = document.getElementById('github-token').value.trim();
+  const alertEl = document.getElementById('alert-sync');
+  if (!token) { alertEl.className='alert alert-error'; alertEl.textContent='Token requis'; alertEl.style.display='block'; return; }
+  alertEl.className='alert alert-success'; alertEl.textContent='Connexion...'; alertEl.style.display='block';
+  try {
+    await setupSync(token);
+    alertEl.textContent = '✓ Sauvegarde activée ! Les données sont maintenant protégées.';
+    document.getElementById('github-token').value = '';
+    renderSyncStatus();
+    updateSyncBadge(true);
+  } catch (e) {
+    alertEl.className='alert alert-error';
+    alertEl.textContent = e.message;
+  }
+}
+
+async function restaurerDepuisGist() {
+  const alertEl = document.getElementById('alert-sync');
+  alertEl.className='alert alert-success'; alertEl.textContent='Restauration...'; alertEl.style.display='block';
+  const ok = await restoreFromGist();
+  if (ok) {
+    alertEl.textContent = '✓ Données restaurées depuis le cloud !';
+  } else {
+    alertEl.className='alert alert-error';
+    alertEl.textContent = 'Aucune donnée cloud trouvée. Configurez la sauvegarde d\'abord.';
+  }
+}
+
+async function importerFichier(input) {
+  const alertEl = document.getElementById('alert-sync');
+  try {
+    await importData(input.files[0]);
+    alertEl.className='alert alert-success'; alertEl.textContent='✓ Données importées !'; alertEl.style.display='block';
+  } catch (e) {
+    alertEl.className='alert alert-error'; alertEl.textContent=e.message; alertEl.style.display='block';
+  }
+  input.value = '';
+}
+
 // ── Entrée clavier ────────────────────────────────────────
 
 document.getElementById('nouvel-employe').addEventListener('keydown', e => {
@@ -365,11 +451,18 @@ document.getElementById('pin-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') validerPin();
 });
 
-// ── PWA ───────────────────────────────────────────────────
+// ── Démarrage ─────────────────────────────────────────────
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
-}
+(async () => {
+  // Si localStorage vide mais sync configurée → restauration auto
+  const hasData = localStorage.getItem(DB_KEY);
+  if (!hasData) {
+    const restored = await restoreFromGist();
+    if (restored) console.log('Données restaurées depuis GitHub Gist');
+  }
+  updateSyncBadge(!!getSyncConfig()?.lastSync);
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+})();
 </script>
 </body>
 </html>

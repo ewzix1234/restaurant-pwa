@@ -1,7 +1,7 @@
 const DB_KEY = 'restaurant_v1';
 
 function load() {
-  return JSON.parse(localStorage.getItem(DB_KEY) || '{"employes":[],"pointages":{},"pin":"8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92","archives":[]}');
+  return JSON.parse(localStorage.getItem(DB_KEY) || '{"employes":[],"pointages":{},"pin":"91b4d142823f7d20c5f08df69122de43f35f057a988d9619f6d3138485c9a203","archives":[]}');
 }
 
 function save(data) {

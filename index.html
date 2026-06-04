@@ -30,6 +30,9 @@
         <div class="label">Espace Responsable</div>
       </div>
     </div>
+    <div style="text-align:center;margin-top:0.5rem">
+      <a href="#" style="font-size:0.85rem;color:var(--muted)" onclick="showSection('section-code');return false">Changer le code PIN</a>
+    </div>
   </div>
 
   <!-- Liste employés pour saisie -->
@@ -194,15 +197,16 @@ function selectionnerEmploye(id, nom) {
 
 // ── Saisie ────────────────────────────────────────────────
 
+const DEFAULTS = { midi: { debut: '11:00', fin: '' }, soir: { debut: '19:00', fin: '' } };
+
 function renderSaisie() {
-  const header = document.querySelector('#section-saisie .card');
   document.getElementById('date-affichee').textContent = `${currentEmployeNom} — ${formatDate(currentDate)}`;
   const pts = getPointages(currentEmployeId, currentDate);
   for (const s of ['midi', 'soir']) {
-    const p = pts[s] || {};
-    document.getElementById(`${s}-debut`).value = p.heureDebut || '';
-    document.getElementById(`${s}-fin`).value = p.heureFin || '';
-    document.getElementById(`${s}-repas`).checked = !!p.repasPris;
+    const p = pts[s];
+    document.getElementById(`${s}-debut`).value = p?.heureDebut || DEFAULTS[s].debut;
+    document.getElementById(`${s}-fin`).value = p?.heureFin || '';
+    document.getElementById(`${s}-repas`).checked = !!p?.repasPris;
   }
   document.getElementById('alert-saisie').style.display = 'none';
 }

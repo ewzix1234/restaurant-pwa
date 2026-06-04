@@ -197,6 +197,32 @@ label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 
 .home-card .icon { font-size: 2rem; margin-bottom: 0.4rem; }
 .home-card .label { font-weight: 600; font-size: 0.95rem; }
 
+.accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.accordion-icon {
+  font-size: 0.75rem;
+  color: var(--muted);
+  transition: transform 0.2s;
+}
+
+.accordion-body {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.25s ease, padding-top 0.2s;
+  padding-top: 0;
+}
+
+.accordion-body.open {
+  max-height: 600px;
+  padding-top: 0.8rem;
+}
+
 @media print {
   header, .no-print { display: none !important; }
   body { background: white; }

@@ -145,30 +145,56 @@
   <!-- Sauvegarde automatique -->
   <div id="section-sync" class="section">
     <div class="card">
-      <h2 style="margin-bottom:0.3rem;font-size:1rem">☁ Sauvegarde automatique</h2>
-      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem">Les données sont envoyées sur GitHub après chaque saisie. Configurez une seule fois.</p>
-      <div id="alert-sync" class="alert"></div>
-      <div id="sync-status-detail" style="margin-bottom:0.8rem;font-size:0.85rem"></div>
-      <div class="field">
-        <label>Token GitHub (scope : gist)</label>
-        <input type="password" id="github-token" placeholder="ghp_...">
+      <div class="accordion-header" onclick="toggleAccordion('acc-auto')">
+        <h2 style="font-size:1rem;margin:0">☁ Sauvegarde automatique</h2>
+        <span id="acc-auto-icon" class="accordion-icon">▼</span>
       </div>
-      <button class="btn btn-primary btn-block" onclick="activerSync()">Activer la sauvegarde auto</button>
-      <button class="btn btn-secondary btn-block" style="margin-top:0.5rem" onclick="restaurerDepuisGist()">Restaurer depuis le cloud</button>
+      <div id="acc-auto" class="accordion-body">
+        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem">Les données sont envoyées sur GitHub après chaque saisie. Configurez une seule fois.</p>
+        <div id="alert-sync" class="alert"></div>
+        <div id="sync-status-detail" style="margin-bottom:0.8rem;font-size:0.85rem"></div>
+        <div class="field">
+          <label>Token GitHub (scope : gist)</label>
+          <input type="password" id="github-token" placeholder="ghp_...">
+        </div>
+        <button class="btn btn-primary btn-block" onclick="activerSync()">Activer la sauvegarde auto</button>
+        <button class="btn btn-secondary btn-block" style="margin-top:0.5rem" onclick="restaurerDepuisGist()">Restaurer depuis le cloud</button>
+      </div>
     </div>
 
     <div class="card">
-      <h2 style="margin-bottom:0.8rem;font-size:1rem">📁 Sauvegarde manuelle</h2>
-      <div style="display:flex;gap:0.5rem">
-        <button class="btn btn-secondary" style="flex:1" onclick="exportData()">Exporter fichier</button>
-        <label class="btn btn-secondary" style="flex:1;text-align:center;cursor:pointer">
-          Importer fichier
-          <input type="file" accept=".json" style="display:none" onchange="importerFichier(this)">
-        </label>
+      <div class="accordion-header" onclick="toggleAccordion('acc-manuel')">
+        <h2 style="font-size:1rem;margin:0">📁 Sauvegarde manuelle</h2>
+        <span id="acc-manuel-icon" class="accordion-icon">▼</span>
+      </div>
+      <div id="acc-manuel" class="accordion-body">
+        <div style="display:flex;gap:0.5rem;padding-top:0.2rem">
+          <button class="btn btn-secondary" style="flex:1" onclick="exportData()">Exporter fichier</button>
+          <label class="btn btn-secondary" style="flex:1;text-align:center;cursor:pointer">
+            Importer fichier
+            <input type="file" accept=".json" style="display:none" onchange="importerFichier(this)">
+          </label>
+        </div>
       </div>
     </div>
 
     <button class="btn btn-secondary btn-block" onclick="showSection('section-home')">← Accueil</button>
+  </div>
+
+  <!-- Modal suppression employé -->
+  <div id="modal-suppr" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;align-items:center;justify-content:center;padding:1rem">
+    <div style="background:white;border-radius:14px;padding:1.5rem;width:100%;max-width:340px">
+      <h3 style="margin-bottom:0.5rem;font-size:1rem">Supprimer le profil</h3>
+      <p style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem">Tapez <strong id="modal-nom-attendu" style="color:var(--text)"></strong> pour confirmer</p>
+      <div id="alert-modal" class="alert"></div>
+      <div class="field">
+        <input type="text" id="modal-input-nom" placeholder="Prénom..." autocomplete="off">
+      </div>
+      <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+        <button class="btn btn-secondary" style="flex:1" onclick="fermerModal()">Annuler</button>
+        <button class="btn btn-primary" style="flex:1;background:#c62828" onclick="confirmerSuppression()">Supprimer</button>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -213,9 +239,36 @@ function renderEmployes() {
   `).join('');
 }
 
+let _supprId = null;
+let _supprNom = null;
+
 function supprimerEmploye(id, nom) {
-  if (!confirm(`Supprimer "${nom}" ? Toutes ses heures seront effacées.`)) return;
-  deleteEmploye(id);
+  _supprId = id;
+  _supprNom = nom;
+  document.getElementById('modal-nom-attendu').textContent = nom;
+  document.getElementById('modal-input-nom').value = '';
+  document.getElementById('alert-modal').style.display = 'none';
+  const modal = document.getElementById('modal-suppr');
+  modal.style.display = 'flex';
+  setTimeout(() => document.getElementById('modal-input-nom').focus(), 100);
+}
+
+function fermerModal() {
+  document.getElementById('modal-suppr').style.display = 'none';
+  _supprId = null; _supprNom = null;
+}
+
+function confirmerSuppression() {
+  const saisi = document.getElementById('modal-input-nom').value.trim();
+  const alertEl = document.getElementById('alert-modal');
+  if (saisi !== _supprNom) {
+    alertEl.className = 'alert alert-error';
+    alertEl.textContent = 'Le prénom ne correspond pas.';
+    alertEl.style.display = 'block';
+    return;
+  }
+  deleteEmploye(_supprId);
+  fermerModal();
   renderEmployes();
 }
 
@@ -476,6 +529,16 @@ function exportTableau() {
   const blob = new Blob([html], { type: 'text/html' });
   const url = URL.createObjectURL(blob);
   window.open(url, '_blank');
+}
+
+// ── Accordéon ────────────────────────────────────────────
+
+function toggleAccordion(id) {
+  const body = document.getElementById(id);
+  const icon = document.getElementById(id + '-icon');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  icon.textContent = isOpen ? '▼' : '▲';
 }
 
 // ── Sync / Sauvegarde ─────────────────────────────────────

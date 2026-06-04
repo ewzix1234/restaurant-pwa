@@ -395,10 +395,10 @@ function renderRecap() {
         <tbody>
           ${recap.map(e => `
             <tr>
-              <td>${e.nom}</td>
+              <td style="font-weight:500">${e.nom}</td>
               <td>${e.totalHeures}</td>
               <td>${e.totalRepas}</td>
-              <td><a class="detail-link" href="#" onclick="voirDetail(${e.id},'${e.nom.replace(/'/g,"\\'")}');return false">Détail</a></td>
+              <td><button class="btn btn-secondary btn-sm" onclick="voirDetail(${e.id},'${e.nom.replace(/'/g,"\\'")}')">Voir →</button></td>
             </tr>
           `).join('')}
         </tbody>
@@ -508,27 +508,32 @@ function exportTableau() {
       </tr>`;
     }).join('');
     return `
-      <h3 style="margin:1.5rem 0 0.5rem;color:#1a1a2e">${e.nom} — ${e.totalHeures} — ${e.totalRepas} repas</h3>
-      <div style="overflow-x:auto">
-      <table style="border-collapse:collapse;font-size:0.85rem;margin-bottom:1rem;min-width:480px">
-        <thead>
-          <tr style="background:#1a1a2e;color:white">
-            <th rowspan="2" style="padding:6px 10px;text-align:left;vertical-align:middle">Date</th>
-            <th colspan="3" style="padding:6px 10px;text-align:center;border-right:1px solid rgba(255,255,255,0.2)">Midi</th>
-            <th colspan="3" style="padding:6px 10px;text-align:center">Soir</th>
-          </tr>
-          <tr style="background:#2a2a45;color:white;font-size:0.8rem">
-            <th style="padding:4px 10px;font-weight:400">Horaires</th>
-            <th style="padding:4px 10px;font-weight:400">Durée</th>
-            <th style="padding:4px 10px;font-weight:400;border-right:1px solid rgba(255,255,255,0.2)">Repas</th>
-            <th style="padding:4px 10px;font-weight:400">Horaires</th>
-            <th style="padding:4px 10px;font-weight:400">Durée</th>
-            <th style="padding:4px 10px;font-weight:400">Repas</th>
-          </tr>
-        </thead>
-        <tbody>${lignes}</tbody>
-      </table>
-      </div>`;
+      <details style="margin-bottom:0.8rem;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden">
+        <summary style="padding:0.9rem 1rem;background:#f9f9f9;cursor:pointer;font-weight:600;color:#1a1a2e;list-style:none;display:flex;justify-content:space-between;align-items:center">
+          <span>${e.nom}</span>
+          <span style="font-weight:400;font-size:0.9rem;color:#555">${e.totalHeures} · ${e.totalRepas} repas ▸</span>
+        </summary>
+        <div style="padding:1rem;overflow-x:auto">
+        <table style="border-collapse:collapse;font-size:0.85rem;min-width:480px">
+          <thead>
+            <tr style="background:#1a1a2e;color:white">
+              <th rowspan="2" style="padding:6px 10px;text-align:left;vertical-align:middle">Date</th>
+              <th colspan="3" style="padding:6px 10px;text-align:center;border-right:1px solid rgba(255,255,255,0.2)">Midi</th>
+              <th colspan="3" style="padding:6px 10px;text-align:center">Soir</th>
+            </tr>
+            <tr style="background:#2a2a45;color:white;font-size:0.8rem">
+              <th style="padding:4px 10px;font-weight:400">Horaires</th>
+              <th style="padding:4px 10px;font-weight:400">Durée</th>
+              <th style="padding:4px 10px;font-weight:400;border-right:1px solid rgba(255,255,255,0.2)">Repas</th>
+              <th style="padding:4px 10px;font-weight:400">Horaires</th>
+              <th style="padding:4px 10px;font-weight:400">Durée</th>
+              <th style="padding:4px 10px;font-weight:400">Repas</th>
+            </tr>
+          </thead>
+          <tbody>${lignes}</tbody>
+        </table>
+        </div>
+      </details>`;
   }).join('');
 
   const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
@@ -555,7 +560,7 @@ function exportTableau() {
     <thead><tr><th style="text-align:left">Employé</th><th>Total heures</th><th>Repas</th></tr></thead>
     <tbody>${lignesSommaire}</tbody>
   </table>
-  <h2>Détail par employé</h2>
+  <h2>Détail par employé <span style="font-size:0.85rem;font-weight:400;color:#888">(cliquer pour ouvrir)</span></h2>
   ${sections}
   </body></html>`;
 

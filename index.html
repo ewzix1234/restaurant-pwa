@@ -109,6 +109,7 @@
         <button onclick="changerMois(+1)">›</button>
       </div>
       <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        <button class="btn btn-secondary btn-sm" onclick="exportTableau()">📊 Tableau</button>
         <button class="btn btn-secondary btn-sm" onclick="window.print()">Imprimer</button>
         <button class="btn btn-secondary btn-sm" onclick="showSection('section-code')">Changer code</button>
         <button class="btn btn-primary btn-sm" onclick="cloturerMoisAction()" style="background:#c62828">Clôturer le mois</button>
@@ -207,8 +208,15 @@ function renderEmployes() {
     <div class="employe-item">
       <span class="employe-nom">${e.nom}</span>
       <button class="btn btn-primary btn-sm" onclick="selectionnerEmploye(${e.id}, '${e.nom.replace(/'/g, "\\'")}')">Saisir</button>
+      <button class="btn btn-secondary btn-sm" style="color:#c62828" onclick="supprimerEmploye(${e.id}, '${e.nom.replace(/'/g, "\\'")}')">✕</button>
     </div>
   `).join('');
+}
+
+function supprimerEmploye(id, nom) {
+  if (!confirm(`Supprimer "${nom}" ? Toutes ses heures seront effacées.`)) return;
+  deleteEmploye(id);
+  renderEmployes();
 }
 
 function ajouterEmploye() {
@@ -229,7 +237,7 @@ function selectionnerEmploye(id, nom) {
 
 // ── Saisie ────────────────────────────────────────────────
 
-const DEFAULTS = { midi: { debut: '11:00', fin: '' }, soir: { debut: '19:00', fin: '' } };
+const DEFAULTS = { midi: { debut: '11:00', fin: '15:00' }, soir: { debut: '19:00', fin: '23:00' } };
 
 function renderSaisie() {
   document.getElementById('date-affichee').textContent = `${currentEmployeNom} — ${formatDate(currentDate)}`;
@@ -386,6 +394,88 @@ async function changerCode() {
     alertEl.textContent = e.message;
     alertEl.style.display = 'block';
   }
+}
+
+// ── Export tableau ────────────────────────────────────────
+
+function exportTableau() {
+  const recap = calcRecap(currentMois);
+  const [annee, moisNum] = currentMois.split('-');
+  const noms = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  const nomMois = `${noms[parseInt(moisNum)-1]} ${annee}`;
+
+  const lignesSommaire = recap.map(e => `
+    <tr>
+      <td>${e.nom}</td>
+      <td style="text-align:center">${e.totalHeures}</td>
+      <td style="text-align:center">${e.totalRepas}</td>
+    </tr>`).join('');
+
+  const sections = recap.map(e => {
+    const jours = Object.keys(e.detail).sort();
+    if (!jours.length) return '';
+    const lignes = jours.map(date => {
+      const d = e.detail[date];
+      const [y, m, j] = date.split('-');
+      const affDate = `${j}/${m}/${y}`;
+      const midi = d.midi;
+      const soir = d.soir;
+      const duréeMidi = (midi?.heureDebut && midi?.heureFin) ? formatDuration(minutesDiff(midi.heureDebut, midi.heureFin)) : '-';
+      const duréeSoir = (soir?.heureDebut && soir?.heureFin) ? formatDuration(minutesDiff(soir.heureDebut, soir.heureFin)) : '-';
+      return `<tr>
+        <td>${affDate}</td>
+        <td style="text-align:center">${midi?.heureDebut||'-'} → ${midi?.heureFin||'-'}</td>
+        <td style="text-align:center">${duréeMidi}</td>
+        <td style="text-align:center">${midi?.repasPris ? 'Oui' : '-'}</td>
+        <td style="text-align:center">${soir?.heureDebut||'-'} → ${soir?.heureFin||'-'}</td>
+        <td style="text-align:center">${duréeSoir}</td>
+        <td style="text-align:center">${soir?.repasPris ? 'Oui' : '-'}</td>
+      </tr>`;
+    }).join('');
+    return `
+      <h3 style="margin:1.5rem 0 0.5rem;color:#1a1a2e">${e.nom} — ${e.totalHeures} — ${e.totalRepas} repas</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:0.85rem;margin-bottom:1rem">
+        <thead>
+          <tr style="background:#1a1a2e;color:white">
+            <th style="padding:6px 8px;text-align:left">Date</th>
+            <th style="padding:6px 8px">Midi</th>
+            <th style="padding:6px 8px">Durée</th>
+            <th style="padding:6px 8px">Repas</th>
+            <th style="padding:6px 8px">Soir</th>
+            <th style="padding:6px 8px">Durée</th>
+            <th style="padding:6px 8px">Repas</th>
+          </tr>
+        </thead>
+        <tbody>${lignes}</tbody>
+      </table>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+  <title>Récap ${nomMois}</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2rem; color: #222; }
+    h1 { color: #1a1a2e; margin-bottom: 0.3rem; }
+    h2 { color: #1a1a2e; margin: 1.5rem 0 0.5rem; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+    th { background: #1a1a2e; color: white; padding: 8px; text-align: left; }
+    td { padding: 6px 8px; border-bottom: 1px solid #eee; }
+    tr:last-child td { border-bottom: none; }
+    @media print { body { padding: 1rem; } }
+  </style></head><body>
+  <h1>Récapitulatif — ${nomMois}</h1>
+  <p style="color:#888;margin-bottom:1.5rem">Généré le ${new Date().toLocaleDateString('fr')}</p>
+  <h2>Résumé</h2>
+  <table>
+    <thead><tr><th>Employé</th><th style="text-align:center">Total heures</th><th style="text-align:center">Repas</th></tr></thead>
+    <tbody>${lignesSommaire}</tbody>
+  </table>
+  <h2>Détail par employé</h2>
+  ${sections}
+  </body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
 }
 
 // ── Sync / Sauvegarde ─────────────────────────────────────

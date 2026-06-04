@@ -142,6 +142,13 @@ function renameEmploye(id, nom) {
   save(data);
 }
 
+function deleteEmploye(id) {
+  const data = load();
+  data.employes = data.employes.filter(e => e.id !== id);
+  delete data.pointages[id];
+  save(data);
+}
+
 // ── Pointages ─────────────────────────────────────────────
 
 function getPointages(employeId, date) {

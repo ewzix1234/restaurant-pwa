@@ -72,9 +72,9 @@ header a { color: white; text-decoration: none; font-size: 1.4rem; }
 .btn-primary { background: var(--accent); color: white; }
 .btn-secondary { background: #eee; color: var(--text); }
 .btn-block { display: block; width: 100%; }
-.btn-sm { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+.btn-sm { padding: 0.5rem 0.9rem; font-size: 0.85rem; min-height: 38px; }
 
-input[type="text"], input[type="time"], input[type="password"], input[type="number"] {
+input[type="text"], input[type="password"], input[type="number"] {
   width: 100%;
   padding: 0.65rem 0.8rem;
   border: 1.5px solid #ddd;
@@ -85,6 +85,32 @@ input[type="text"], input[type="time"], input[type="password"], input[type="numb
   transition: border-color 0.15s;
 }
 input:focus { border-color: var(--accent); background: white; }
+
+.time-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  background: #fafafa;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  padding: 0 0.4rem;
+  transition: border-color 0.15s;
+}
+.time-picker:focus-within { border-color: var(--accent); background: white; }
+.tp-h, .tp-m {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  padding: 0.65rem 0.1rem;
+  outline: none;
+  text-align: center;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  min-width: 0;
+}
+.tp-sep { font-weight: 700; color: var(--muted); font-size: 1rem; }
 
 label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.3rem; }
 
@@ -97,9 +123,10 @@ label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 
 .employe-item {
   display: flex;
   align-items: center;
-  padding: 0.8rem 0;
+  padding: 0.9rem 0;
   border-bottom: 1px solid #f0f0f0;
   gap: 0.6rem;
+  min-height: 56px;
 }
 .employe-item:last-child { border-bottom: none; }
 .employe-nom { flex: 1; font-weight: 500; font-size: 1rem; }
@@ -149,10 +176,12 @@ label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 
 .date-nav button {
   background: none;
   border: none;
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   cursor: pointer;
-  padding: 0.2rem 0.5rem;
+  padding: 0.4rem 1rem;
   color: var(--primary);
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .recap-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }

@@ -154,6 +154,7 @@ function deleteEmploye(id) {
   const data = load();
   data.employes = data.employes.filter(e => e.id !== id);
   delete data.pointages[id];
+  if (data.conges) delete data.conges[id];
   save(data);
 }
 
@@ -179,6 +180,60 @@ function clearPointage(employeId, date) {
     delete data.pointages[employeId][date];
   }
   save(data);
+}
+
+// ── Congés ────────────────────────────────────────────────
+
+function setJoursCongeHabituels(empId, jours) {
+  const data = load();
+  const emp = data.employes.find(e => e.id === empId);
+  if (emp) emp.joursConge = jours;
+  save(data);
+}
+
+function setCongeJour(empId, date, value) {
+  const data = load();
+  if (!data.conges) data.conges = {};
+  if (!data.conges[empId]) data.conges[empId] = {};
+  if (value === null) {
+    delete data.conges[empId][date];
+  } else {
+    data.conges[empId][date] = value;
+  }
+  save(data);
+}
+
+function isCongeJour(empId, date) {
+  const data = load();
+  const emp = data.employes.find(e => e.id === empId);
+  if (!emp) return false;
+  const explicit = ((data.conges || {})[empId] || {})[date];
+  if (explicit === true) return true;
+  if (explicit === false) return false;
+  const dow = new Date(date + 'T12:00:00').getDay();
+  return (emp.joursConge || []).includes(dow);
+}
+
+function calcCongesDuMois(empId, mois) {
+  const data = load();
+  const emp = data.employes.find(e => e.id === empId);
+  if (!emp) return 0;
+  const [y, m] = mois.split('-').map(Number);
+  const daysInMonth = new Date(y, m, 0).getDate();
+  let count = 0;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = `${mois}-${String(d).padStart(2,'0')}`;
+    const explicit = ((data.conges || {})[empId] || {})[date];
+    let isConge;
+    if (explicit === true) isConge = true;
+    else if (explicit === false) isConge = false;
+    else {
+      const dow = new Date(date + 'T12:00:00').getDay();
+      isConge = (emp.joursConge || []).includes(dow);
+    }
+    if (isConge) count++;
+  }
+  return count;
 }
 
 // ── Récap ─────────────────────────────────────────────────
@@ -229,6 +284,13 @@ function cloturerMois(mois) {
   for (const empId of Object.keys(data.pointages)) {
     for (const date of Object.keys(data.pointages[empId])) {
       if (date.startsWith(mois)) delete data.pointages[empId][date];
+    }
+  }
+  if (data.conges) {
+    for (const empId of Object.keys(data.conges)) {
+      for (const date of Object.keys(data.conges[empId])) {
+        if (date.startsWith(mois)) delete data.conges[empId][date];
+      }
     }
   }
   save(data);

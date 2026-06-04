@@ -53,6 +53,8 @@
       </div>
       <div id="alert-saisie" class="alert"></div>
 
+      <button id="btn-conge-jour" class="btn-conge" onclick="toggleCongeJour()">🏖 En congé ce jour</button>
+
       <div class="service-block">
         <div class="service-title">Midi</div>
         <div class="row">
@@ -105,6 +107,7 @@
       <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
         <button class="btn btn-secondary btn-sm" onclick="exportTableau()">📊 Tableau</button>
         <button class="btn btn-secondary btn-sm" onclick="showSection('section-semaines');renderSemaines()">📅 Semaines</button>
+        <button class="btn btn-secondary btn-sm" onclick="showSection('section-conges');renderConges()">🏖 Congés</button>
         <button class="btn btn-secondary btn-sm" onclick="window.print()">Imprimer</button>
         <button class="btn btn-secondary btn-sm" onclick="showSection('section-code')">🔑 Code PIN</button>
         <button class="btn btn-secondary btn-sm" onclick="showSection('section-sync')">⚙️ Réglages</button>
@@ -127,6 +130,15 @@
       </div>
     </div>
     <div id="sem-content"></div>
+    <button class="btn btn-secondary btn-block" onclick="showSection('section-responsable')">← Récap mensuel</button>
+  </div>
+
+  <!-- Congés -->
+  <div id="section-conges" class="section">
+    <div class="card">
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem">Cochez les jours de congé habituels par employé. Modifiable jour par jour dans la saisie.</p>
+      <div id="conges-content"></div>
+    </div>
     <button class="btn btn-secondary btn-block" onclick="showSection('section-responsable')">← Récap mensuel</button>
   </div>
 
@@ -332,14 +344,39 @@ function setTime(id, val) {
 function renderSaisie() {
   document.getElementById('date-affichee').textContent = `${currentEmployeNom} — ${formatDate(currentDate)}`;
   const pts = getPointages(currentEmployeId, currentDate);
+  const conge = isCongeJour(currentEmployeId, currentDate);
+  const btn = document.getElementById('btn-conge-jour');
+  btn.classList.toggle('active', conge);
   for (const s of ['midi', 'soir']) {
     const p = pts[s];
-    // Si entrée existante : afficher la valeur stockée (vide si null), sinon afficher les défauts
     setTime(`${s}-debut`, p ? (p.heureDebut || '') : DEFAULTS[s].debut);
     setTime(`${s}-fin`, p ? (p.heureFin || '') : DEFAULTS[s].fin);
     document.getElementById(`${s}-repas`).checked = !!p?.repasPris;
   }
   document.getElementById('alert-saisie').style.display = 'none';
+}
+
+function toggleCongeJour() {
+  const current = isCongeJour(currentEmployeId, currentDate);
+  const newVal = !current;
+  const data = load();
+  const emp = data.employes.find(e => e.id === currentEmployeId);
+  const dow = new Date(currentDate + 'T12:00:00').getDay();
+  const isPatternDay = (emp?.joursConge || []).includes(dow);
+  if (newVal === isPatternDay) {
+    setCongeJour(currentEmployeId, currentDate, null);
+  } else {
+    setCongeJour(currentEmployeId, currentDate, newVal);
+  }
+  if (newVal) {
+    clearPointage(currentEmployeId, currentDate);
+    for (const s of ['midi', 'soir']) {
+      setTime(`${s}-debut`, '');
+      setTime(`${s}-fin`, '');
+      document.getElementById(`${s}-repas`).checked = false;
+    }
+  }
+  renderSaisie();
 }
 
 function changerJour(delta) {
@@ -427,15 +464,18 @@ function renderRecap() {
 
   container.innerHTML = `
     <div class="card" style="padding:0.4rem 0.6rem">
-      ${recap.map(e => `
+      ${recap.map(e => {
+        const conges = calcCongesDuMois(e.id, currentMois);
+        return `
         <div class="recap-emp-row">
           <div class="recap-emp-av">${e.nom.charAt(0).toUpperCase()}</div>
           <div class="recap-emp-info">
             <div class="recap-emp-nom">${e.nom}</div>
+            ${conges > 0 ? `<div class="recap-emp-sub">🏖 ${conges} congé${conges > 1 ? 's' : ''}</div>` : ''}
           </div>
           <div class="recap-emp-h">${e.totalHeures}</div>
-        </div>
-      `).join('')}
+        </div>`;
+      }).join('')}
     </div>
   `;
 }
@@ -484,9 +524,13 @@ function renderSemaines() {
     container.innerHTML = '<div class="card"><p style="color:var(--muted)">Aucun employé.</p></div>';
     return;
   }
+  const data_snap = load();
   const rows = recap.map(emp => {
-    const weekMins = weeks.map(w => {
+    const empData = data_snap.employes.find(e => e.id === emp.id);
+    const weekCells = weeks.map(w => {
       let mins = 0;
+      let conges = 0;
+      // Count hours in this week
       for (const [date, services] of Object.entries(emp.detail)) {
         if (date >= w.startIso && date <= w.endIso) {
           for (const s of ['midi', 'soir']) {
@@ -495,9 +539,23 @@ function renderSemaines() {
           }
         }
       }
-      return mins;
+      // Count congé days in this week (within the month)
+      const [y, m] = currentMois.split('-').map(Number);
+      const firstOfMonth = `${currentMois}-01`;
+      const lastOfMonth = `${currentMois}-${String(new Date(y, m, 0).getDate()).padStart(2,'0')}`;
+      let d = new Date(Math.max(new Date(w.startIso+'T12:00:00'), new Date(firstOfMonth+'T12:00:00')));
+      const endD = new Date(Math.min(new Date(w.endIso+'T12:00:00'), new Date(lastOfMonth+'T12:00:00')));
+      while (d <= endD) {
+        const dateStr = toISO(d);
+        const explicit = ((data_snap.conges || {})[emp.id] || {})[dateStr];
+        const dow = d.getDay();
+        const isConge = explicit === true || (explicit !== false && (empData?.joursConge || []).includes(dow));
+        if (isConge) conges++;
+        d.setDate(d.getDate() + 1);
+      }
+      return { mins, conges };
     });
-    return { nom: emp.nom, weekMins, totalMins: weekMins.reduce((a, b) => a + b, 0) };
+    return { nom: emp.nom, weekCells, totalMins: weekCells.reduce((a, c) => a + c.mins, 0) };
   });
   const thBase = `padding:0.55rem 0.6rem;background:var(--primary);color:white;font-size:0.78rem;font-weight:600;text-align:center;white-space:nowrap;border-bottom:none`;
   container.innerHTML = `
@@ -515,7 +573,11 @@ function renderSemaines() {
             ${rows.map((r, i) => `
               <tr style="${i % 2 === 1 ? 'background:#f8fafc' : ''}">
                 <td style="padding:0.65rem 0.9rem;font-weight:600;color:var(--text);border-bottom:1px solid var(--border)">${r.nom}</td>
-                ${r.weekMins.map(m => `<td style="padding:0.65rem 0.6rem;text-align:center;font-weight:${m > 0 ? '700' : '400'};color:${m > 0 ? 'var(--accent)' : 'var(--muted)'};border-bottom:1px solid var(--border)">${m > 0 ? formatDuration(m) : '—'}</td>`).join('')}
+                ${r.weekCells.map(c => {
+                  if (c.mins > 0) return `<td style="padding:0.65rem 0.6rem;text-align:center;font-weight:700;color:var(--accent);border-bottom:1px solid var(--border)">${formatDuration(c.mins)}</td>`;
+                  if (c.conges > 0) return `<td style="padding:0.65rem 0.6rem;text-align:center;font-weight:600;color:#92400e;background:#fef9c3;border-bottom:1px solid var(--border)">🏖 ${c.conges}j</td>`;
+                  return `<td style="padding:0.65rem 0.6rem;text-align:center;color:var(--muted);border-bottom:1px solid var(--border)">—</td>`;
+                }).join('')}
                 <td style="padding:0.65rem 0.6rem;text-align:center;font-weight:700;color:var(--primary);border-bottom:1px solid var(--border)">${r.totalMins > 0 ? formatDuration(r.totalMins) : '—'}</td>
               </tr>
             `).join('')}
@@ -524,6 +586,42 @@ function renderSemaines() {
       </div>
     </div>
   `;
+}
+
+// ── Congés ────────────────────────────────────────────────
+
+const DOW_CONFIG = [
+  { label: 'Lun', dow: 1 }, { label: 'Mar', dow: 2 }, { label: 'Mer', dow: 3 },
+  { label: 'Jeu', dow: 4 }, { label: 'Ven', dow: 5 }, { label: 'Sam', dow: 6 }, { label: 'Dim', dow: 0 }
+];
+
+function renderConges() {
+  const employes = getEmployes();
+  const container = document.getElementById('conges-content');
+  if (employes.length === 0) {
+    container.innerHTML = '<p style="color:var(--muted)">Aucun employé.</p>';
+    return;
+  }
+  container.innerHTML = employes.map((emp, idx) => `
+    <div style="${idx < employes.length - 1 ? 'margin-bottom:1.1rem;padding-bottom:1.1rem;border-bottom:1px solid var(--border)' : ''}">
+      <div style="font-weight:600;font-size:0.95rem;margin-bottom:0.6rem">${emp.nom}</div>
+      <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+        ${DOW_CONFIG.map(d => `
+          <button class="dow-btn ${(emp.joursConge || []).includes(d.dow) ? 'active' : ''}"
+            onclick="toggleJourConge(${emp.id}, ${d.dow})">${d.label}</button>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleJourConge(empId, dow) {
+  const data = load();
+  const emp = data.employes.find(e => e.id === empId);
+  if (!emp) return;
+  const current = emp.joursConge || [];
+  setJoursCongeHabituels(empId, current.includes(dow) ? current.filter(d => d !== dow) : [...current, dow]);
+  renderConges();
 }
 
 function voirDetail(id, nom) {

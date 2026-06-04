@@ -479,6 +479,30 @@ label {
   border-color: var(--accent);
 }
 
+/* ── Day-of-week toggle buttons (config congés) ─────────── */
+
+.dow-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: white;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background var(--t), border-color var(--t), color var(--t), transform var(--t);
+  flex-shrink: 0;
+}
+.dow-btn:active { transform: scale(0.93); }
+.dow-btn.active {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* ── Effacer jour ────────────────────────────────────────── */
 
 .btn-effacer {

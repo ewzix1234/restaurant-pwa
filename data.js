@@ -27,19 +27,21 @@ function setSyncConfig(cfg) {
 async function syncToGist(data) {
   const cfg = getSyncConfig();
   if (!cfg?.token) return;
-  const headers = { 'Authorization': `token ${cfg.token}`, 'Content-Type': 'application/json' };
+  const headers = { 'Authorization': `Bearer ${cfg.token}`, 'Content-Type': 'application/json' };
   const body = { files: { 'restaurant-backup.json': { content: JSON.stringify(data) } } };
   try {
     let gistId = cfg.gistId;
     if (gistId) {
       const r = await fetch(`https://api.github.com/gists/${gistId}`, { method: 'PATCH', headers, body: JSON.stringify(body) });
       if (r.status === 404) gistId = null;
+      else if (!r.ok) throw new Error(`sync ${r.status}`);
     }
     if (!gistId) {
       const r = await fetch('https://api.github.com/gists', {
         method: 'POST', headers,
         body: JSON.stringify({ ...body, description: 'Restaurant Pointage Backup', public: false })
       });
+      if (!r.ok) throw new Error(`sync ${r.status}`);
       const g = await r.json();
       gistId = g.id;
       setSyncConfig({ ...cfg, gistId });
@@ -56,17 +58,23 @@ async function restoreFromGist() {
   if (!cfg?.token || !cfg?.gistId) return false;
   try {
     const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
-      headers: { 'Authorization': `token ${cfg.token}` }
+      headers: { 'Authorization': `Bearer ${cfg.token}` }
     });
+    if (!r.ok) return false;
     const g = await r.json();
     const content = g.files?.['restaurant-backup.json']?.content;
-    if (content) { localStorage.setItem(DB_KEY, content); return true; }
+    if (content) {
+      const parsed = JSON.parse(content);
+      if (!Array.isArray(parsed.employes) || typeof parsed.pointages !== 'object' || !parsed.pin) return false;
+      localStorage.setItem(DB_KEY, content);
+      return true;
+    }
   } catch {}
   return false;
 }
 
 async function setupSync(token) {
-  const r = await fetch('https://api.github.com/user', { headers: { 'Authorization': `token ${token}` } });
+  const r = await fetch('https://api.github.com/user', { headers: { 'Authorization': `Bearer ${token}` } });
   if (!r.ok) throw new Error('Token invalide');
   const existing = getSyncConfig();
   setSyncConfig({ token, gistId: existing?.gistId || null });
@@ -129,7 +137,7 @@ function getEmployes() {
 
 function addEmploye(nom) {
   const data = load();
-  const id = Date.now();
+  const id = Date.now() * 1000 + Math.floor(Math.random() * 1000);
   data.employes.push({ id, nom: nom.trim(), actif: true });
   save(data);
   return { id, nom };
@@ -242,9 +250,14 @@ function importData(file) {
     reader.onload = e => {
       try {
         const data = JSON.parse(e.target.result);
+        if (!Array.isArray(data.employes) || typeof data.pointages !== 'object' || !data.pin) {
+          throw new Error('Fichier invalide (structure incorrecte)');
+        }
         localStorage.setItem(DB_KEY, JSON.stringify(data));
         resolve();
-      } catch { reject(new Error('Fichier invalide')); }
+      } catch (err) {
+        reject(err instanceof SyntaxError ? new Error('Fichier invalide') : err);
+      }
     };
     reader.readAsText(file);
   });

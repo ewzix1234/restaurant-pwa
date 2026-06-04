@@ -334,8 +334,9 @@ function renderSaisie() {
   const pts = getPointages(currentEmployeId, currentDate);
   for (const s of ['midi', 'soir']) {
     const p = pts[s];
-    setTime(`${s}-debut`, p?.heureDebut || DEFAULTS[s].debut);
-    setTime(`${s}-fin`, p?.heureFin || DEFAULTS[s].fin);
+    // Si entrée existante : afficher la valeur stockée (vide si null), sinon afficher les défauts
+    setTime(`${s}-debut`, p ? (p.heureDebut || '') : DEFAULTS[s].debut);
+    setTime(`${s}-fin`, p ? (p.heureFin || '') : DEFAULTS[s].fin);
     document.getElementById(`${s}-repas`).checked = !!p?.repasPris;
   }
   document.getElementById('alert-saisie').style.display = 'none';
@@ -353,6 +354,7 @@ function sauvegarder() {
   const alert = document.getElementById('alert-saisie');
   alert.style.display = 'none';
 
+  // Valider d'abord les deux services avant toute écriture
   for (const s of ['midi', 'soir']) {
     const debut = getTime(`${s}-debut`);
     const fin = getTime(`${s}-fin`);
@@ -362,6 +364,12 @@ function sauvegarder() {
       alert.style.display = 'block';
       return;
     }
+  }
+
+  // Tout est valide → sauvegarder
+  for (const s of ['midi', 'soir']) {
+    const debut = getTime(`${s}-debut`);
+    const fin = getTime(`${s}-fin`);
     const repas = document.getElementById(`${s}-repas`).checked;
     savePointage(currentEmployeId, currentDate, s, debut, fin, repas);
   }
@@ -684,22 +692,6 @@ function exportTableau() {
     }
     .page-title { font-size: 1.55rem; font-weight: 700; color: #1a1a2e; }
     .page-meta { font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem; }
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.7rem;
-      margin-bottom: 1.6rem;
-    }
-    .kpi-card {
-      background: white;
-      border-radius: 12px;
-      padding: 1rem 0.75rem;
-      text-align: center;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .kpi-value { font-size: 1.45rem; font-weight: 700; color: #b45309; font-variant-numeric: tabular-nums; }
-    .kpi-label { font-size: 0.7rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.2rem; }
     .section-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 0.6rem; }
     .sum-table {
       width: 100%;
@@ -827,6 +819,7 @@ async function importerFichier(input) {
   try {
     await importData(input.files[0]);
     alertEl.className='alert alert-success'; alertEl.textContent='✓ Données importées !'; alertEl.style.display='block';
+    renderEmployes();
   } catch (e) {
     alertEl.className='alert alert-error'; alertEl.textContent=e.message; alertEl.style.display='block';
   }

@@ -31,7 +31,19 @@ header {
   z-index: 10;
 }
 
-header h1 { font-size: 1.1rem; font-weight: 600; flex: 1; }
+header h1 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  flex: 1;
+  outline: none;
+  border-radius: 4px;
+  cursor: text;
+}
+header h1:focus {
+  background: rgba(255,255,255,0.12);
+  padding: 0.15rem 0.4rem;
+  margin: -0.15rem -0.4rem;
+}
 header a { color: white; text-decoration: none; font-size: 1.4rem; }
 
 .container { padding: 1rem; max-width: 480px; margin: 0 auto; }
@@ -79,7 +91,7 @@ label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 
 .field { margin-bottom: 0.8rem; }
 
 .row { display: flex; gap: 0.6rem; }
-.row .field { flex: 1; }
+.row .field { flex: 1; min-width: 0; }
 
 .employe-item {
   display: flex;
@@ -175,27 +187,25 @@ label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 
 .section { display: none; }
 .section.active { display: block; }
 
-.home-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.8rem;
-  margin-bottom: 1rem;
-}
-.home-card {
+.home-main-card {
   background: var(--card);
   border-radius: var(--radius);
-  padding: 1.2rem;
+  padding: 3.5rem 1.2rem;
   box-shadow: var(--shadow);
   text-align: center;
-  text-decoration: none;
-  color: var(--text);
   cursor: pointer;
   border: 2px solid transparent;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
-.home-card:active { border-color: var(--accent); }
-.home-card .icon { font-size: 2rem; margin-bottom: 0.4rem; }
-.home-card .label { font-weight: 600; font-size: 0.95rem; }
+.home-main-card:active { border-color: var(--accent); box-shadow: 0 4px 20px rgba(233,69,96,0.18); }
+.home-main-card .icon { font-size: 4rem; margin-bottom: 0.9rem; }
+.home-main-card .label { font-weight: 700; font-size: 1.5rem; color: var(--text); }
+
+.espace-resp-link {
+  font-size: 0.9rem;
+  color: var(--muted);
+  text-decoration: none;
+}
 
 .accordion-header {
   display: flex;

@@ -13,27 +13,20 @@
 </head>
 <body>
 <header>
-  <h1>Pointage Restaurant</h1>
+  <h1 id="app-title" contenteditable="true" spellcheck="false" title="Toucher pour renommer">Pointage Restaurant</h1>
   <span id="sync-badge" style="font-size:0.75rem;margin-right:0.3rem"></span>
-  <a href="#" onclick="showSection('section-sync');return false" style="font-size:1.2rem;text-decoration:none" title="Sauvegarde">⚙️</a>
 </header>
 
 <div class="container">
 
   <!-- Accueil : choix employé -->
   <div id="section-home" class="section active">
-    <div class="home-grid">
-      <div class="home-card" onclick="showSection('section-employes')">
-        <div class="icon">👥</div>
-        <div class="label">Saisir heures</div>
-      </div>
-      <div class="home-card" onclick="showSection('section-pin')">
-        <div class="icon">🔒</div>
-        <div class="label">Espace Responsable</div>
-      </div>
+    <div class="home-main-card" onclick="showSection('section-employes')">
+      <div class="icon">👥</div>
+      <div class="label">Saisir les heures</div>
     </div>
-    <div style="text-align:center;margin-top:0.5rem">
-      <a href="#" style="font-size:0.85rem;color:var(--muted)" onclick="showSection('section-code');return false">Changer le code PIN</a>
+    <div style="text-align:center;margin-top:2rem">
+      <a href="#" class="espace-resp-link" onclick="showSection('section-pin');return false">🔒 Espace Responsable</a>
     </div>
   </div>
 
@@ -111,7 +104,8 @@
       <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
         <button class="btn btn-secondary btn-sm" onclick="exportTableau()">📊 Tableau</button>
         <button class="btn btn-secondary btn-sm" onclick="window.print()">Imprimer</button>
-        <button class="btn btn-secondary btn-sm" onclick="showSection('section-code')">Changer code</button>
+        <button class="btn btn-secondary btn-sm" onclick="showSection('section-code')">🔑 Code PIN</button>
+        <button class="btn btn-secondary btn-sm" onclick="showSection('section-sync')">⚙️ Réglages</button>
         <button class="btn btn-primary btn-sm" onclick="cloturerMoisAction()" style="background:#c62828">Clôturer le mois</button>
       </div>
     </div>
@@ -178,7 +172,7 @@
       </div>
     </div>
 
-    <button class="btn btn-secondary btn-block" onclick="showSection('section-home')">← Accueil</button>
+    <button class="btn btn-secondary btn-block" onclick="showSection('section-responsable')">← Retour</button>
   </div>
 
   <!-- Modal suppression employé -->
@@ -298,7 +292,7 @@ function renderSaisie() {
   for (const s of ['midi', 'soir']) {
     const p = pts[s];
     document.getElementById(`${s}-debut`).value = p?.heureDebut || DEFAULTS[s].debut;
-    document.getElementById(`${s}-fin`).value = p?.heureFin || '';
+    document.getElementById(`${s}-fin`).value = p?.heureFin || DEFAULTS[s].fin;
     document.getElementById(`${s}-repas`).checked = !!p?.repasPris;
   }
   document.getElementById('alert-saisie').style.display = 'none';
@@ -604,9 +598,27 @@ document.getElementById('pin-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') validerPin();
 });
 
+// ── Titre éditable ────────────────────────────────────────
+
+const TITLE_KEY = 'app_title';
+const titleEl = document.getElementById('app-title');
+
+function saveTitle() {
+  const val = titleEl.textContent.trim();
+  if (val) localStorage.setItem(TITLE_KEY, val);
+}
+
+titleEl.addEventListener('blur', saveTitle);
+titleEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); titleEl.blur(); }
+});
+
 // ── Démarrage ─────────────────────────────────────────────
 
 (async () => {
+  const savedTitle = localStorage.getItem(TITLE_KEY);
+  if (savedTitle) titleEl.textContent = savedTitle;
+
   // Si localStorage vide mais sync configurée → restauration auto
   const hasData = localStorage.getItem(DB_KEY);
   if (!hasData) {

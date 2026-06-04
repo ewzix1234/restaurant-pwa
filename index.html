@@ -509,39 +509,50 @@ function exportTableau() {
     }).join('');
     return `
       <h3 style="margin:1.5rem 0 0.5rem;color:#1a1a2e">${e.nom} — ${e.totalHeures} — ${e.totalRepas} repas</h3>
-      <table style="width:100%;border-collapse:collapse;font-size:0.85rem;margin-bottom:1rem">
+      <div style="overflow-x:auto">
+      <table style="border-collapse:collapse;font-size:0.85rem;margin-bottom:1rem;min-width:480px">
         <thead>
           <tr style="background:#1a1a2e;color:white">
-            <th style="padding:6px 8px;text-align:left">Date</th>
-            <th style="padding:6px 8px">Midi</th>
-            <th style="padding:6px 8px">Durée</th>
-            <th style="padding:6px 8px">Repas</th>
-            <th style="padding:6px 8px">Soir</th>
-            <th style="padding:6px 8px">Durée</th>
-            <th style="padding:6px 8px">Repas</th>
+            <th rowspan="2" style="padding:6px 10px;text-align:left;vertical-align:middle">Date</th>
+            <th colspan="3" style="padding:6px 10px;text-align:center;border-right:1px solid rgba(255,255,255,0.2)">Midi</th>
+            <th colspan="3" style="padding:6px 10px;text-align:center">Soir</th>
+          </tr>
+          <tr style="background:#2a2a45;color:white;font-size:0.8rem">
+            <th style="padding:4px 10px;font-weight:400">Horaires</th>
+            <th style="padding:4px 10px;font-weight:400">Durée</th>
+            <th style="padding:4px 10px;font-weight:400;border-right:1px solid rgba(255,255,255,0.2)">Repas</th>
+            <th style="padding:4px 10px;font-weight:400">Horaires</th>
+            <th style="padding:4px 10px;font-weight:400">Durée</th>
+            <th style="padding:4px 10px;font-weight:400">Repas</th>
           </tr>
         </thead>
         <tbody>${lignes}</tbody>
-      </table>`;
+      </table>
+      </div>`;
   }).join('');
 
   const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Récap ${nomMois}</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 2rem; color: #222; }
+    body { font-family: Arial, sans-serif; padding: 1.5rem; color: #222; }
     h1 { color: #1a1a2e; margin-bottom: 0.3rem; }
     h2 { color: #1a1a2e; margin: 1.5rem 0 0.5rem; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
-    th { background: #1a1a2e; color: white; padding: 8px; text-align: left; }
-    td { padding: 6px 8px; border-bottom: 1px solid #eee; }
+    .scroll { overflow-x: auto; }
+    table { border-collapse: collapse; margin-bottom: 1rem; }
+    th { background: #1a1a2e; color: white; padding: 8px 10px; text-align: center; white-space: nowrap; }
+    th:first-child { text-align: left; }
+    td { padding: 6px 10px; border-bottom: 1px solid #eee; white-space: nowrap; text-align: center; }
+    td:first-child { text-align: left; }
     tr:last-child td { border-bottom: none; }
-    @media print { body { padding: 1rem; } }
+    .sum-table { width: 100%; }
+    @media print { body { padding: 1rem; } .scroll { overflow: visible; } }
   </style></head><body>
   <h1>Récapitulatif — ${nomMois}</h1>
   <p style="color:#888;margin-bottom:1.5rem">Généré le ${new Date().toLocaleDateString('fr')}</p>
   <h2>Résumé</h2>
-  <table>
-    <thead><tr><th>Employé</th><th style="text-align:center">Total heures</th><th style="text-align:center">Repas</th></tr></thead>
+  <table class="sum-table">
+    <thead><tr><th style="text-align:left">Employé</th><th>Total heures</th><th>Repas</th></tr></thead>
     <tbody>${lignesSommaire}</tbody>
   </table>
   <h2>Détail par employé</h2>

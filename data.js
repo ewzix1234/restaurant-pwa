@@ -114,6 +114,20 @@ function formatDuration(mins) {
   return `${Math.floor(mins / 60)}h${String(mins % 60).padStart(2, '0')}`;
 }
 
+// Heures en centièmes (paie) : 1h30 → 1h50
+function formatCentiemes(mins) {
+  if (mins <= 0) return '0h00';
+  let h = Math.floor(mins / 60);
+  let c = Math.round((mins % 60) / 60 * 100);
+  if (c === 100) { h += 1; c = 0; }
+  return `${h}h${String(c).padStart(2, '0')}`;
+}
+
+// Affiche un nombre de congés (gère les demi-journées) : 2 → "2", 2.5 → "2,5"
+function formatConges(n) {
+  return Number.isInteger(n) ? String(n) : String(n).replace('.', ',');
+}
+
 function today() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -182,6 +196,16 @@ function clearPointage(employeId, date) {
   save(data);
 }
 
+function clearService(employeId, date, service) {
+  const data = load();
+  const jour = data.pointages[employeId]?.[date];
+  if (jour) {
+    delete jour[service];
+    if (Object.keys(jour).length === 0) delete data.pointages[employeId][date];
+  }
+  save(data);
+}
+
 // ── Congés ────────────────────────────────────────────────
 
 function setJoursCongeHabituels(empId, jours) {
@@ -203,15 +227,21 @@ function setCongeJour(empId, date, value) {
   save(data);
 }
 
-function isCongeJour(empId, date) {
+// État de congé d'un jour : 'full' (journée), 'midi', 'soir' (demi-journées) ou null
+function getCongeState(empId, date) {
   const data = load();
   const emp = data.employes.find(e => e.id === empId);
-  if (!emp) return false;
+  if (!emp) return null;
   const explicit = ((data.conges || {})[empId] || {})[date];
-  if (explicit === true) return true;
-  if (explicit === false) return false;
+  if (explicit === true) return 'full';
+  if (explicit === 'midi' || explicit === 'soir') return explicit;
+  if (explicit === false) return null;
   const dow = new Date(date + 'T12:00:00').getDay();
-  return (emp.joursConge || []).includes(dow);
+  return (emp.joursConge || []).includes(dow) ? 'full' : null;
+}
+
+function isCongeJour(empId, date) {
+  return getCongeState(empId, date) === 'full';
 }
 
 function calcCongesDuMois(empId, mois) {
@@ -224,23 +254,21 @@ function calcCongesDuMois(empId, mois) {
   for (let d = 1; d <= daysInMonth; d++) {
     const date = `${mois}-${String(d).padStart(2,'0')}`;
     const explicit = ((data.conges || {})[empId] || {})[date];
-    let isConge;
     if (explicit === true) {
-      isConge = true;
+      count += 1;
+    } else if (explicit === 'midi' || explicit === 'soir') {
+      count += 0.5;
     } else if (explicit === false) {
-      isConge = false;
+      // pas de congé
     } else {
       const dow = new Date(date + 'T12:00:00').getDay();
       if ((emp.joursConge || []).includes(dow)) {
         // Jour de congé habituel — annulé si des heures ont été saisies
         const pts = (data.pointages[empId] || {})[date] || {};
         const aDesHeures = ['midi', 'soir'].some(s => pts[s]?.heureDebut && pts[s]?.heureFin);
-        isConge = !aDesHeures;
-      } else {
-        isConge = false;
+        if (!aDesHeures) count += 1;
       }
     }
-    if (isConge) count++;
   }
   return count;
 }
@@ -263,7 +291,7 @@ function calcRecap(mois) {
         if (p.repasPris) totalRepas++;
       }
     }
-    return { id: emp.id, nom: emp.nom, totalMinutes, totalHeures: formatDuration(totalMinutes), totalRepas, detail };
+    return { id: emp.id, nom: emp.nom, totalMinutes, totalHeures: formatCentiemes(totalMinutes), totalRepas, detail };
   });
 }
 

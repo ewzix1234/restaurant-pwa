@@ -453,30 +453,54 @@ label {
   padding-top: 0.9rem;
 }
 
-/* ── Congé button ────────────────────────────────────────── */
+/* ── Congé : journée + demi-journées ─────────────────────── */
 
-.btn-conge {
-  display: block;
-  width: 100%;
-  padding: 0.75rem;
+.conge-select {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.conge-select-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-right: 0.2rem;
+}
+.conge-chip {
+  flex: 1;
+  min-width: 64px;
+  padding: 0.6rem 0.4rem;
   border: 2px dashed #fcd34d;
   border-radius: 10px;
   background: transparent;
   color: var(--accent);
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
   text-align: center;
   touch-action: manipulation;
   transition: background var(--t), border-style var(--t);
 }
-.btn-conge:active { background: var(--accent-light); }
-.btn-conge.active {
+.conge-chip:active { background: var(--accent-light); }
+.conge-chip.active {
   background: var(--accent-light);
   border-style: solid;
   border-color: var(--accent);
+}
+
+/* Service couvert par un congé : grisé et désactivé */
+.service-conge {
+  opacity: 0.45;
+  pointer-events: none;
+  position: relative;
+}
+.service-conge .service-title::after {
+  content: ' — en congé';
+  font-weight: 600;
+  color: var(--accent);
 }
 
 /* ── Day-of-week toggle buttons (config congés) ─────────── */

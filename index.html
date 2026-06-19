@@ -53,9 +53,14 @@
       </div>
       <div id="alert-saisie" class="alert"></div>
 
-      <button id="btn-conge-jour" class="btn-conge" onclick="toggleCongeJour()">🏖 En congé ce jour</button>
+      <div class="conge-select">
+        <span class="conge-select-label">🏖 Congé</span>
+        <button id="conge-btn-full" class="conge-chip" onclick="setConge('full')">Journée</button>
+        <button id="conge-btn-midi" class="conge-chip" onclick="setConge('midi')">Midi</button>
+        <button id="conge-btn-soir" class="conge-chip" onclick="setConge('soir')">Soir</button>
+      </div>
 
-      <div class="service-block">
+      <div class="service-block" id="service-midi">
         <div class="service-title">Midi</div>
         <div class="row">
           <div class="field"><label>Début</label><div class="time-picker" id="midi-debut"><select class="tp-h"></select><span class="tp-sep">h</span><select class="tp-m"></select></div></div>
@@ -67,7 +72,7 @@
         </div>
       </div>
 
-      <div class="service-block">
+      <div class="service-block" id="service-soir">
         <div class="service-title">Soir</div>
         <div class="row">
           <div class="field"><label>Début</label><div class="time-picker" id="soir-debut"><select class="tp-h"></select><span class="tp-sep">h</span><select class="tp-m"></select></div></div>
@@ -311,7 +316,7 @@ function selectionnerEmploye(id, nom) {
 
 // ── Saisie ────────────────────────────────────────────────
 
-const DEFAULTS = { midi: { debut: '11:00', fin: '15:00' }, soir: { debut: '19:00', fin: '23:00' } };
+const DEFAULTS = { midi: { debut: '11:00', fin: '15:00' }, soir: { debut: '18:30', fin: '23:00' } };
 
 function buildTimePickers() {
   const hOpts = '<option value="">--</option>' +
@@ -344,37 +349,39 @@ function setTime(id, val) {
 function renderSaisie() {
   document.getElementById('date-affichee').textContent = `${currentEmployeNom} — ${formatDate(currentDate)}`;
   const pts = getPointages(currentEmployeId, currentDate);
-  const conge = isCongeJour(currentEmployeId, currentDate);
-  const btn = document.getElementById('btn-conge-jour');
-  btn.classList.toggle('active', conge);
+  const etat = getCongeState(currentEmployeId, currentDate);
+  document.getElementById('conge-btn-full').classList.toggle('active', etat === 'full');
+  document.getElementById('conge-btn-midi').classList.toggle('active', etat === 'midi');
+  document.getElementById('conge-btn-soir').classList.toggle('active', etat === 'soir');
   for (const s of ['midi', 'soir']) {
     const p = pts[s];
     setTime(`${s}-debut`, p ? (p.heureDebut || '') : DEFAULTS[s].debut);
     setTime(`${s}-fin`, p ? (p.heureFin || '') : DEFAULTS[s].fin);
     document.getElementById(`${s}-repas`).checked = !!p?.repasPris;
+    const off = etat === 'full' || etat === s;
+    document.getElementById(`service-${s}`).classList.toggle('service-conge', off);
   }
   document.getElementById('alert-saisie').style.display = 'none';
 }
 
-function toggleCongeJour() {
-  const current = isCongeJour(currentEmployeId, currentDate);
-  const newVal = !current;
+function setConge(type) {
+  const current = getCongeState(currentEmployeId, currentDate);
+  const newVal = current === type ? null : type;   // re-cliquer = annuler
   const data = load();
   const emp = data.employes.find(e => e.id === currentEmployeId);
   const dow = new Date(currentDate + 'T12:00:00').getDay();
   const isPatternDay = (emp?.joursConge || []).includes(dow);
-  if (newVal === isPatternDay) {
-    setCongeJour(currentEmployeId, currentDate, null);
-  } else {
-    setCongeJour(currentEmployeId, currentDate, newVal);
-  }
-  if (newVal) {
+
+  if (newVal === null) {
+    // Pas de congé : annule l'override, ou force "non" si jour habituel
+    setCongeJour(currentEmployeId, currentDate, isPatternDay ? false : null);
+  } else if (newVal === 'full') {
+    setCongeJour(currentEmployeId, currentDate, isPatternDay ? null : true);
     clearPointage(currentEmployeId, currentDate);
-    for (const s of ['midi', 'soir']) {
-      setTime(`${s}-debut`, '');
-      setTime(`${s}-fin`, '');
-      document.getElementById(`${s}-repas`).checked = false;
-    }
+  } else {
+    // Demi-journée (midi ou soir) : on efface les heures de ce service
+    setCongeJour(currentEmployeId, currentDate, newVal);
+    clearService(currentEmployeId, currentDate, newVal);
   }
   renderSaisie();
 }
@@ -391,8 +398,11 @@ function sauvegarder() {
   const alert = document.getElementById('alert-saisie');
   alert.style.display = 'none';
 
+  const etat = getCongeState(currentEmployeId, currentDate);
+
   // Valider d'abord les deux services avant toute écriture
   for (const s of ['midi', 'soir']) {
+    if (etat === 'full' || etat === s) continue; // service en congé → ignoré
     const debut = getTime(`${s}-debut`);
     const fin = getTime(`${s}-fin`);
     if (debut && fin && fin <= debut) {
@@ -405,6 +415,7 @@ function sauvegarder() {
 
   // Tout est valide → sauvegarder
   for (const s of ['midi', 'soir']) {
+    if (etat === 'full' || etat === s) continue; // service en congé → ignoré
     const debut = getTime(`${s}-debut`);
     const fin = getTime(`${s}-fin`);
     const repas = document.getElementById(`${s}-repas`).checked;
@@ -471,7 +482,7 @@ function renderRecap() {
           <div class="recap-emp-av">${e.nom.charAt(0).toUpperCase()}</div>
           <div class="recap-emp-info">
             <div class="recap-emp-nom">${e.nom}</div>
-            ${conges > 0 ? `<div class="recap-emp-sub">🏖 ${conges} congé${conges > 1 ? 's' : ''}</div>` : ''}
+            ${conges > 0 ? `<div class="recap-emp-sub">🏖 ${formatConges(conges)} congé${conges > 1 ? 's' : ''}</div>` : ''}
           </div>
           <div class="recap-emp-h">${e.totalHeures}</div>
         </div>`;
@@ -549,8 +560,9 @@ function renderSemaines() {
         const dateStr = toISO(d);
         const explicit = ((data_snap.conges || {})[emp.id] || {})[dateStr];
         const dow = d.getDay();
-        const isConge = explicit === true || (explicit !== false && (empData?.joursConge || []).includes(dow));
-        if (isConge) conges++;
+        if (explicit === true) conges += 1;
+        else if (explicit === 'midi' || explicit === 'soir') conges += 0.5;
+        else if (explicit !== false && (empData?.joursConge || []).includes(dow)) conges += 1;
         d.setDate(d.getDate() + 1);
       }
       return { mins, conges };
@@ -574,11 +586,11 @@ function renderSemaines() {
               <tr style="${i % 2 === 1 ? 'background:#f8fafc' : ''}">
                 <td style="padding:0.65rem 0.9rem;font-weight:600;color:var(--text);border-bottom:1px solid var(--border)">${r.nom}</td>
                 ${r.weekCells.map(c => {
-                  if (c.mins > 0) return `<td style="padding:0.65rem 0.6rem;text-align:center;font-weight:700;color:var(--accent);border-bottom:1px solid var(--border)">${formatDuration(c.mins)}</td>`;
-                  if (c.conges > 0) return `<td style="padding:0.65rem 0.6rem;text-align:center;font-weight:600;color:#92400e;background:#fef9c3;border-bottom:1px solid var(--border)">🏖 ${c.conges}j</td>`;
+                  if (c.mins > 0) return `<td style="padding:0.65rem 0.6rem;text-align:center;font-weight:700;color:var(--accent);border-bottom:1px solid var(--border)">${formatCentiemes(c.mins)}</td>`;
+                  if (c.conges > 0) return `<td style="padding:0.65rem 0.6rem;text-align:center;font-weight:600;color:#92400e;background:#fef9c3;border-bottom:1px solid var(--border)">🏖 ${formatConges(c.conges)}j</td>`;
                   return `<td style="padding:0.65rem 0.6rem;text-align:center;color:var(--muted);border-bottom:1px solid var(--border)">—</td>`;
                 }).join('')}
-                <td style="padding:0.65rem 0.6rem;text-align:center;font-weight:700;color:var(--primary);border-bottom:1px solid var(--border)">${r.totalMins > 0 ? formatDuration(r.totalMins) : '—'}</td>
+                <td style="padding:0.65rem 0.6rem;text-align:center;font-weight:700;color:var(--primary);border-bottom:1px solid var(--border)">${r.totalMins > 0 ? formatCentiemes(r.totalMins) : '—'}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -640,7 +652,7 @@ function voirDetail(id, nom) {
           ${['midi','soir'].map(s => {
             const p = d[s];
             if (!p || (!p.heureDebut && !p.heureFin && !p.repasPris)) return '';
-            const duree = (p.heureDebut && p.heureFin) ? formatDuration(minutesDiff(p.heureDebut, p.heureFin)) : '-';
+            const duree = (p.heureDebut && p.heureFin) ? formatCentiemes(minutesDiff(p.heureDebut, p.heureFin)) : '-';
             return `<div style="font-size:0.9rem;color:var(--muted);margin-left:0.5rem">
               ${s.charAt(0).toUpperCase()+s.slice(1)} : ${p.heureDebut||'-'} → ${p.heureFin||'-'} (${duree})${p.repasPris?' 🍽':''}
             </div>`;
@@ -714,8 +726,8 @@ function exportTableau() {
       const affDate = `${j}/${m}`;
       const midi = d.midi;
       const soir = d.soir;
-      const duréeMidi = (midi?.heureDebut && midi?.heureFin) ? formatDuration(minutesDiff(midi.heureDebut, midi.heureFin)) : '';
-      const duréeSoir = (soir?.heureDebut && soir?.heureFin) ? formatDuration(minutesDiff(soir.heureDebut, soir.heureFin)) : '';
+      const duréeMidi = (midi?.heureDebut && midi?.heureFin) ? formatCentiemes(minutesDiff(midi.heureDebut, midi.heureFin)) : '';
+      const duréeSoir = (soir?.heureDebut && soir?.heureFin) ? formatCentiemes(minutesDiff(soir.heureDebut, soir.heureFin)) : '';
       const midiHor = (midi?.heureDebut || midi?.heureFin) ? `${midi?.heureDebut||'—'}&thinsp;→&thinsp;${midi?.heureFin||'—'}` : '<span style="color:#cbd5e1">—</span>';
       const soirHor = (soir?.heureDebut || soir?.heureFin) ? `${soir?.heureDebut||'—'}&thinsp;→&thinsp;${soir?.heureFin||'—'}` : '<span style="color:#cbd5e1">—</span>';
       return `<tr>

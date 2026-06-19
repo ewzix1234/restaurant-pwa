@@ -291,7 +291,7 @@ function calcRecap(mois) {
         if (p.repasPris) totalRepas++;
       }
     }
-    return { id: emp.id, nom: emp.nom, totalMinutes, totalHeures: formatCentiemes(totalMinutes), totalRepas, detail };
+    return { id: emp.id, nom: emp.nom, totalMinutes, totalHeures: formatDuration(totalMinutes), totalRepas, detail };
   });
 }
 

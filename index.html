@@ -586,11 +586,11 @@ function renderSemaines() {
               <tr style="${i % 2 === 1 ? 'background:#f8fafc' : ''}">
                 <td style="padding:0.65rem 0.9rem;font-weight:600;color:var(--text);border-bottom:1px solid var(--border)">${r.nom}</td>
                 ${r.weekCells.map(c => {
-                  if (c.mins > 0) return `<td style="padding:0.65rem 0.6rem;text-align:center;font-weight:700;color:var(--accent);border-bottom:1px solid var(--border)">${formatCentiemes(c.mins)}</td>`;
+                  if (c.mins > 0) return `<td style="padding:0.65rem 0.6rem;text-align:center;font-weight:700;color:var(--accent);border-bottom:1px solid var(--border)">${formatDuration(c.mins)}</td>`;
                   if (c.conges > 0) return `<td style="padding:0.65rem 0.6rem;text-align:center;font-weight:600;color:#92400e;background:#fef9c3;border-bottom:1px solid var(--border)">🏖 ${formatConges(c.conges)}j</td>`;
                   return `<td style="padding:0.65rem 0.6rem;text-align:center;color:var(--muted);border-bottom:1px solid var(--border)">—</td>`;
                 }).join('')}
-                <td style="padding:0.65rem 0.6rem;text-align:center;font-weight:700;color:var(--primary);border-bottom:1px solid var(--border)">${r.totalMins > 0 ? formatCentiemes(r.totalMins) : '—'}</td>
+                <td style="padding:0.65rem 0.6rem;text-align:center;font-weight:700;color:var(--primary);border-bottom:1px solid var(--border)">${r.totalMins > 0 ? formatDuration(r.totalMins) : '—'}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -652,7 +652,7 @@ function voirDetail(id, nom) {
           ${['midi','soir'].map(s => {
             const p = d[s];
             if (!p || (!p.heureDebut && !p.heureFin && !p.repasPris)) return '';
-            const duree = (p.heureDebut && p.heureFin) ? formatCentiemes(minutesDiff(p.heureDebut, p.heureFin)) : '-';
+            const duree = (p.heureDebut && p.heureFin) ? formatDuration(minutesDiff(p.heureDebut, p.heureFin)) : '-';
             return `<div style="font-size:0.9rem;color:var(--muted);margin-left:0.5rem">
               ${s.charAt(0).toUpperCase()+s.slice(1)} : ${p.heureDebut||'-'} → ${p.heureFin||'-'} (${duree})${p.repasPris?' 🍽':''}
             </div>`;
@@ -711,7 +711,7 @@ function exportTableau() {
           <span style="font-weight:600">${e.nom}</span>
         </div>
       </td>
-      <td style="text-align:center"><span style="display:inline-block;background:#fef3c7;color:#b45309;font-weight:700;padding:0.18rem 0.65rem;border-radius:20px;font-size:0.85rem">${e.totalHeures}</span></td>
+      <td style="text-align:center"><span style="display:inline-block;background:#fef3c7;color:#b45309;font-weight:700;padding:0.18rem 0.65rem;border-radius:20px;font-size:0.85rem">${formatCentiemes(e.totalMinutes)}</span></td>
       <td style="text-align:center;color:${e.totalRepas > 0 ? '#1e293b' : '#94a3b8'}">${e.totalRepas > 0 ? e.totalRepas : '—'}</td>
       <td style="text-align:center;color:${jours > 0 ? '#1e293b' : '#94a3b8'}">${jours > 0 ? jours : '—'}</td>
     </tr>`;
@@ -726,8 +726,8 @@ function exportTableau() {
       const affDate = `${j}/${m}`;
       const midi = d.midi;
       const soir = d.soir;
-      const duréeMidi = (midi?.heureDebut && midi?.heureFin) ? formatCentiemes(minutesDiff(midi.heureDebut, midi.heureFin)) : '';
-      const duréeSoir = (soir?.heureDebut && soir?.heureFin) ? formatCentiemes(minutesDiff(soir.heureDebut, soir.heureFin)) : '';
+      const duréeMidi = (midi?.heureDebut && midi?.heureFin) ? formatDuration(minutesDiff(midi.heureDebut, midi.heureFin)) : '';
+      const duréeSoir = (soir?.heureDebut && soir?.heureFin) ? formatDuration(minutesDiff(soir.heureDebut, soir.heureFin)) : '';
       const midiHor = (midi?.heureDebut || midi?.heureFin) ? `${midi?.heureDebut||'—'}&thinsp;→&thinsp;${midi?.heureFin||'—'}` : '<span style="color:#cbd5e1">—</span>';
       const soirHor = (soir?.heureDebut || soir?.heureFin) ? `${soir?.heureDebut||'—'}&thinsp;→&thinsp;${soir?.heureFin||'—'}` : '<span style="color:#cbd5e1">—</span>';
       return `<tr>
@@ -853,7 +853,7 @@ function exportTableau() {
     <thead>
       <tr>
         <th>Employé</th>
-        <th>Heures</th>
+        <th>Heures<br><span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.66rem;opacity:0.75">(au centième)</span></th>
         <th>Repas</th>
         <th>Jours</th>
       </tr>

@@ -476,17 +476,19 @@ function renderRecap() {
   }
 
   container.innerHTML = `
+    <p class="recap-hint">👆 Touchez un employé pour voir le détail jour par jour</p>
     <div class="card" style="padding:0.4rem 0.6rem">
       ${recap.map(e => {
         const conges = calcCongesDuMois(e.id, currentMois);
         return `
-        <div class="recap-emp-row">
+        <div class="recap-emp-row recap-emp-clic" onclick="voirDetail(${e.id})">
           <div class="recap-emp-av">${e.nom.charAt(0).toUpperCase()}</div>
           <div class="recap-emp-info">
             <div class="recap-emp-nom">${e.nom}</div>
             ${conges > 0 ? `<div class="recap-emp-sub">🏖 ${formatConges(conges)} congé${conges > 1 ? 's' : ''}</div>` : ''}
           </div>
           <div class="recap-emp-h">${e.totalHeures}</div>
+          <div class="recap-emp-arr">›</div>
         </div>`;
       }).join('')}
     </div>
@@ -638,31 +640,79 @@ function toggleJourConge(empId, dow) {
   renderConges();
 }
 
-function voirDetail(id, nom) {
-  document.getElementById('detail-nom').textContent = nom;
+function voirDetail(id) {
   const recap = calcRecap(currentMois);
   const emp = recap.find(e => e.id === id);
-  if (!emp || Object.keys(emp.detail).length === 0) {
-    document.getElementById('detail-content').innerHTML = '<p style="color:var(--muted)">Aucune donnée ce mois.</p>';
-  } else {
-    const jours = Object.keys(emp.detail).sort();
-    document.getElementById('detail-content').innerHTML = jours.map(date => {
-      const d = emp.detail[date];
-      return `
-        <div style="margin-bottom:0.8rem">
-          <strong>${formatDate(date)}</strong>
-          ${['midi','soir'].map(s => {
-            const p = d[s];
-            if (!p || (!p.heureDebut && !p.heureFin && !p.repasPris)) return '';
-            const duree = (p.heureDebut && p.heureFin) ? formatDuration(minutesDiff(p.heureDebut, p.heureFin)) : '-';
-            return `<div style="font-size:0.9rem;color:var(--muted);margin-left:0.5rem">
-              ${s.charAt(0).toUpperCase()+s.slice(1)} : ${p.heureDebut||'-'} → ${p.heureFin||'-'} (${duree})${p.repasPris?' 🍽':''}
-            </div>`;
-          }).join('')}
-        </div>`;
-    }).join('');
-  }
+  const data_snap = load();
+  const empData = data_snap.employes.find(e => e.id === id);
+  const congesMap = data_snap.conges || {};
+  const [annee, moisNum] = currentMois.split('-');
+  const noms = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  const moisLabel = `${noms[parseInt(moisNum)-1]} ${annee}`;
+  document.getElementById('detail-nom').textContent = `${emp ? emp.nom : ''} — ${moisLabel}`;
   showSection('section-detail');
+
+  if (!emp) {
+    document.getElementById('detail-content').innerHTML = '<p style="color:var(--muted)">Employé introuvable.</p>';
+    return;
+  }
+
+  const joursCourts = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  const weeks = getWeeksOfMonth(currentMois);
+  const [y, m] = currentMois.split('-').map(Number);
+  const firstOfMonth = `${currentMois}-01`;
+  const lastOfMonth = toISO(new Date(y, m, 0));
+  const congeLabel = c => c === 'full' ? 'Congé' : c === 'midi' ? 'Congé midi' : 'Congé soir';
+
+  let html = '';
+  let monthMins = 0;
+
+  weeks.forEach(w => {
+    let weekMins = 0;
+    let dayRows = '';
+    let d = new Date(Math.max(new Date(w.startIso+'T12:00:00'), new Date(firstOfMonth+'T12:00:00')));
+    const endD = new Date(Math.min(new Date(w.endIso+'T12:00:00'), new Date(lastOfMonth+'T12:00:00')));
+    while (d <= endD) {
+      const dateStr = toISO(d);
+      const dow = d.getDay();
+      const services = emp.detail[dateStr];
+      const parts = [];
+      let dayMins = 0;
+      for (const s of ['midi', 'soir']) {
+        const p = services && services[s];
+        if (p?.heureDebut && p?.heureFin) {
+          dayMins += minutesDiff(p.heureDebut, p.heureFin);
+          parts.push(`${p.heureDebut}→${p.heureFin}${p.repasPris ? ' 🍽' : ''}`);
+        }
+      }
+      const explicit = (congesMap[id] || {})[dateStr];
+      let conge = null;
+      if (explicit === true) conge = 'full';
+      else if (explicit === 'midi' || explicit === 'soir') conge = explicit;
+      else if (explicit !== false && (empData?.joursConge || []).includes(dow)) conge = 'full';
+
+      if (dayMins > 0 || conge) {
+        weekMins += dayMins;
+        const dayLabel = `${joursCourts[dow]} ${String(d.getDate()).padStart(2,'0')}`;
+        let mid = parts.join('  ·  ');
+        if (conge) mid = mid ? `${mid}  ·  🏖 ${congeLabel(conge)}` : `🏖 ${congeLabel(conge)}`;
+        const tot = dayMins > 0 ? formatDuration(dayMins) : '🏖';
+        dayRows += `<div class="det-day"><span class="det-day-lbl">${dayLabel}</span><span class="det-day-mid">${mid}</span><span class="det-day-tot">${tot}</span></div>`;
+      }
+      d.setDate(d.getDate() + 1);
+    }
+    if (weekMins > 0) {
+      monthMins += weekMins;
+      html += `<div class="det-week"><div class="det-week-head">${w.label} · ${w.sublabel}</div>${dayRows}<div class="det-week-tot">Total ${w.label} : ${formatDuration(weekMins)}</div></div>`;
+    }
+  });
+
+  if (!html) {
+    document.getElementById('detail-content').innerHTML = '<p style="color:var(--muted)">Aucune donnée ce mois.</p>';
+    return;
+  }
+  html += `<div class="det-month-tot">Total du mois : ${formatDuration(monthMins)}</div>`;
+  document.getElementById('detail-content').innerHTML = html;
 }
 
 function cloturerMoisAction() {

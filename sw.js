@@ -1,5 +1,5 @@
 const CACHE = 'pointage-v18';
-const FILES = ['.', 'index.html', 'style.css', 'data.js', 'manifest.json', 'icon.svg'];
+const FILES = ['.', 'index.html', 'style.css', 'time-input.js', 'data.js', 'manifest.json', 'icon.svg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));

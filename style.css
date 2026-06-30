@@ -121,7 +121,7 @@ input:focus {
   box-shadow: 0 0 0 3px rgba(180,83,9,0.1);
 }
 
-/* ── Time Picker ─────────────────────────────────────────── */
+/* ── Time Input ──────────────────────────────────────────── */
 
 .time-input {
   width: 100%;
@@ -556,7 +556,6 @@ label {
   margin-bottom: 0.6rem;
   padding-top: env(safe-area-inset-top, 0);
 }
-.topbar > :only-child { margin-right: auto; }
 .icon-btn {
   display: inline-flex;
   align-items: center;

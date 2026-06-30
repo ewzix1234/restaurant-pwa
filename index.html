@@ -63,8 +63,8 @@
       <div class="service-block" id="service-midi">
         <div class="service-title">Midi</div>
         <div class="row">
-          <div class="field"><label>Début</label><div class="time-picker" id="midi-debut"><select class="tp-h"></select><span class="tp-sep">h</span><select class="tp-m"></select></div></div>
-          <div class="field"><label>Fin</label><div class="time-picker" id="midi-fin"><select class="tp-h"></select><span class="tp-sep">h</span><select class="tp-m"></select></div></div>
+          <div class="field"><label>Début</label><input type="text" inputmode="numeric" class="time-input" id="midi-debut" placeholder="--h--" maxlength="5" aria-label="Heure de début midi"></div>
+          <div class="field"><label>Fin</label><input type="text" inputmode="numeric" class="time-input" id="midi-fin" placeholder="--h--" maxlength="5" aria-label="Heure de fin midi"></div>
         </div>
         <div class="checkbox-row">
           <input type="checkbox" id="midi-repas">
@@ -75,8 +75,8 @@
       <div class="service-block" id="service-soir">
         <div class="service-title">Soir</div>
         <div class="row">
-          <div class="field"><label>Début</label><div class="time-picker" id="soir-debut"><select class="tp-h"></select><span class="tp-sep">h</span><select class="tp-m"></select></div></div>
-          <div class="field"><label>Fin</label><div class="time-picker" id="soir-fin"><select class="tp-h"></select><span class="tp-sep">h</span><select class="tp-m"></select></div></div>
+          <div class="field"><label>Début</label><input type="text" inputmode="numeric" class="time-input" id="soir-debut" placeholder="--h--" maxlength="5" aria-label="Heure de début soir"></div>
+          <div class="field"><label>Fin</label><input type="text" inputmode="numeric" class="time-input" id="soir-fin" placeholder="--h--" maxlength="5" aria-label="Heure de fin soir"></div>
         </div>
         <div class="checkbox-row">
           <input type="checkbox" id="soir-repas">
@@ -319,32 +319,27 @@ function selectionnerEmploye(id, nom) {
 
 const DEFAULTS = { midi: { debut: '11:00', fin: '15:00' }, soir: { debut: '18:30', fin: '23:00' } };
 
-function buildTimePickers() {
-  const hOpts = '<option value="">--</option>' +
-    Array.from({length: 18}, (_, i) => i + 6)
-      .map(h => { const v = String(h).padStart(2,'0'); return `<option value="${v}">${v}</option>`; })
-      .join('');
-  const mOpts = [0,5,10,15,20,25,30,35,40,45,50,55]
-    .map(m => { const v = String(m).padStart(2,'0'); return `<option value="${v}">${v}</option>`; })
-    .join('');
-  document.querySelectorAll('.tp-h').forEach(s => s.innerHTML = hOpts);
-  document.querySelectorAll('.tp-m').forEach(s => s.innerHTML = mOpts);
-}
-
 function getTime(id) {
-  const picker = document.getElementById(id);
-  const h = picker.querySelector('.tp-h').value;
-  const m = picker.querySelector('.tp-m').value;
-  return h ? `${h}:${m}` : '';
+  return digitsToStorage(document.getElementById(id).value);
 }
 
 function setTime(id, val) {
-  const picker = document.getElementById(id);
-  if (!val) { picker.querySelector('.tp-h').value = ''; picker.querySelector('.tp-m').value = '00'; return; }
-  const [h, m] = val.split(':');
-  picker.querySelector('.tp-h').value = h;
-  const mRounded = Math.round(parseInt(m) / 5) * 5 % 60;
-  picker.querySelector('.tp-m').value = String(mRounded).padStart(2, '0');
+  document.getElementById(id).value = storageToDisplay(val);
+}
+
+function initTimeInputs() {
+  const ids = ['midi-debut', 'midi-fin', 'soir-debut', 'soir-fin'];
+  ids.forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.addEventListener('focus', () => el.select());
+    el.addEventListener('input', () => {
+      el.value = formatLiveDisplay(el.value);
+      if (parseDigits(el.value).length === 4 && i < ids.length - 1) {
+        document.getElementById(ids[i + 1]).focus();
+      }
+    });
+    el.addEventListener('blur', () => { el.value = storageToDisplay(getTime(id)); });
+  });
 }
 
 function renderSaisie() {
@@ -964,7 +959,7 @@ titleEl.addEventListener('keydown', e => {
 // ── Démarrage ─────────────────────────────────────────────
 
 (async () => {
-  buildTimePickers();
+  initTimeInputs();
   const savedTitle = localStorage.getItem(TITLE_KEY);
   if (savedTitle) titleEl.textContent = savedTitle;
 

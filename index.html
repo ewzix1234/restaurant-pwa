@@ -19,6 +19,11 @@
 
 <div class="container">
 
+  <div id="topbar" class="topbar no-print" style="display:none">
+    <button class="icon-btn" onclick="showSection('section-home')" aria-label="Accueil">🏠</button>
+    <button id="topbar-gear" class="icon-btn" onclick="showSection('section-reglages')" aria-label="Réglages" style="display:none">⚙️</button>
+  </div>
+
   <!-- Accueil : choix employé -->
   <div id="section-home" class="section active">
     <div class="home-main-card" onclick="showSection('section-employes')">
@@ -63,8 +68,8 @@
       <div class="service-block" id="service-midi">
         <div class="service-title">Midi</div>
         <div class="row">
-          <div class="field"><label>Début</label><div class="time-picker" id="midi-debut"><select class="tp-h"></select><span class="tp-sep">h</span><select class="tp-m"></select></div></div>
-          <div class="field"><label>Fin</label><div class="time-picker" id="midi-fin"><select class="tp-h"></select><span class="tp-sep">h</span><select class="tp-m"></select></div></div>
+          <div class="field"><label>Début</label><input type="text" inputmode="numeric" class="time-input" id="midi-debut" placeholder="--h--" maxlength="5" aria-label="Heure de début midi"></div>
+          <div class="field"><label>Fin</label><input type="text" inputmode="numeric" class="time-input" id="midi-fin" placeholder="--h--" maxlength="5" aria-label="Heure de fin midi"></div>
         </div>
         <div class="checkbox-row">
           <input type="checkbox" id="midi-repas">
@@ -75,8 +80,8 @@
       <div class="service-block" id="service-soir">
         <div class="service-title">Soir</div>
         <div class="row">
-          <div class="field"><label>Début</label><div class="time-picker" id="soir-debut"><select class="tp-h"></select><span class="tp-sep">h</span><select class="tp-m"></select></div></div>
-          <div class="field"><label>Fin</label><div class="time-picker" id="soir-fin"><select class="tp-h"></select><span class="tp-sep">h</span><select class="tp-m"></select></div></div>
+          <div class="field"><label>Début</label><input type="text" inputmode="numeric" class="time-input" id="soir-debut" placeholder="--h--" maxlength="5" aria-label="Heure de début soir"></div>
+          <div class="field"><label>Fin</label><input type="text" inputmode="numeric" class="time-input" id="soir-fin" placeholder="--h--" maxlength="5" aria-label="Heure de fin soir"></div>
         </div>
         <div class="checkbox-row">
           <input type="checkbox" id="soir-repas">
@@ -114,8 +119,6 @@
         <button class="btn btn-secondary btn-sm" onclick="showSection('section-semaines');renderSemaines()">📅 Semaines</button>
         <button class="btn btn-secondary btn-sm" onclick="showSection('section-conges');renderConges()">🏖 Congés</button>
         <button class="btn btn-secondary btn-sm" onclick="window.print()">Imprimer</button>
-        <button class="btn btn-secondary btn-sm" onclick="showSection('section-code')">🔑 Code PIN</button>
-        <button class="btn btn-secondary btn-sm" onclick="showSection('section-sync')">⚙️ Réglages</button>
         <button class="btn btn-primary btn-sm" onclick="cloturerMoisAction()" style="background:#c62828">Clôturer le mois</button>
       </div>
     </div>
@@ -156,20 +159,8 @@
     <button class="btn btn-secondary btn-block" onclick="showSection('section-responsable')">← Récap</button>
   </div>
 
-  <!-- Changer code -->
-  <div id="section-code" class="section">
-    <div class="card">
-      <h2 style="margin-bottom:1rem;font-size:1rem">Changer le code PIN</h2>
-      <div id="alert-code" class="alert"></div>
-      <div class="field"><label>Ancien code</label><input type="password" id="ancien-code" inputmode="numeric" maxlength="6"></div>
-      <div class="field"><label>Nouveau code (6 chiffres)</label><input type="password" id="nouveau-code" inputmode="numeric" maxlength="6"></div>
-      <button class="btn btn-primary btn-block" onclick="changerCode()">Valider</button>
-    </div>
-    <button class="btn btn-secondary btn-block" onclick="showSection('section-responsable')">← Retour</button>
-  </div>
-
-  <!-- Sauvegarde automatique -->
-  <div id="section-sync" class="section">
+  <!-- Réglages (sauvegarde + PIN) -->
+  <div id="section-reglages" class="section">
     <div class="card">
       <div class="accordion-header" onclick="toggleAccordion('acc-auto')">
         <h2 style="font-size:1rem;margin:0">☁ Sauvegarde automatique</h2>
@@ -204,6 +195,19 @@
       </div>
     </div>
 
+    <div class="card">
+      <div class="accordion-header" onclick="toggleAccordion('acc-pin')">
+        <h2 style="font-size:1rem;margin:0">🔑 Changer le code PIN</h2>
+        <span id="acc-pin-icon" class="accordion-icon">▼</span>
+      </div>
+      <div id="acc-pin" class="accordion-body">
+        <div id="alert-code" class="alert"></div>
+        <div class="field"><label>Ancien code</label><input type="password" id="ancien-code" inputmode="numeric" maxlength="6"></div>
+        <div class="field"><label>Nouveau code (6 chiffres)</label><input type="password" id="nouveau-code" inputmode="numeric" maxlength="6"></div>
+        <button class="btn btn-primary btn-block" onclick="changerCode()">Valider</button>
+      </div>
+    </div>
+
     <button class="btn btn-secondary btn-block" onclick="showSection('section-responsable')">← Retour</button>
   </div>
 
@@ -225,6 +229,7 @@
 
 </div>
 
+<script src="time-input.js"></script>
 <script src="data.js"></script>
 <script>
 let currentEmployeId = null;
@@ -237,10 +242,12 @@ let currentMois = currentMonth();
 function showSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  document.getElementById('topbar').style.display = (id === 'section-home') ? 'none' : 'flex';
+  document.getElementById('topbar-gear').style.display = (id === 'section-responsable') ? 'inline-flex' : 'none';
   if (id === 'section-employes') renderEmployes();
   if (id === 'section-saisie') renderSaisie();
   if (id === 'section-responsable') renderRecap();
-  if (id === 'section-sync') { renderSyncStatus(); document.getElementById('alert-sync').style.display='none'; }
+  if (id === 'section-reglages') { renderSyncStatus(); document.getElementById('alert-sync').style.display = 'none'; }
   if (id === 'section-pin') {
     document.getElementById('pin-input').value = '';
     document.getElementById('alert-pin').style.display = 'none';
@@ -318,32 +325,27 @@ function selectionnerEmploye(id, nom) {
 
 const DEFAULTS = { midi: { debut: '11:00', fin: '15:00' }, soir: { debut: '18:30', fin: '23:00' } };
 
-function buildTimePickers() {
-  const hOpts = '<option value="">--</option>' +
-    Array.from({length: 18}, (_, i) => i + 6)
-      .map(h => { const v = String(h).padStart(2,'0'); return `<option value="${v}">${v}</option>`; })
-      .join('');
-  const mOpts = [0,5,10,15,20,25,30,35,40,45,50,55]
-    .map(m => { const v = String(m).padStart(2,'0'); return `<option value="${v}">${v}</option>`; })
-    .join('');
-  document.querySelectorAll('.tp-h').forEach(s => s.innerHTML = hOpts);
-  document.querySelectorAll('.tp-m').forEach(s => s.innerHTML = mOpts);
-}
-
 function getTime(id) {
-  const picker = document.getElementById(id);
-  const h = picker.querySelector('.tp-h').value;
-  const m = picker.querySelector('.tp-m').value;
-  return h ? `${h}:${m}` : '';
+  return digitsToStorage(document.getElementById(id).value);
 }
 
 function setTime(id, val) {
-  const picker = document.getElementById(id);
-  if (!val) { picker.querySelector('.tp-h').value = ''; picker.querySelector('.tp-m').value = '00'; return; }
-  const [h, m] = val.split(':');
-  picker.querySelector('.tp-h').value = h;
-  const mRounded = Math.round(parseInt(m) / 5) * 5 % 60;
-  picker.querySelector('.tp-m').value = String(mRounded).padStart(2, '0');
+  document.getElementById(id).value = storageToDisplay(val);
+}
+
+function initTimeInputs() {
+  const ids = ['midi-debut', 'midi-fin', 'soir-debut', 'soir-fin'];
+  ids.forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.addEventListener('focus', () => el.select());
+    el.addEventListener('input', () => {
+      el.value = formatLiveDisplay(el.value);
+      if (parseDigits(el.value).length === 4 && i < ids.length - 1) {
+        document.getElementById(ids[i + 1]).focus();
+      }
+    });
+    el.addEventListener('blur', () => { el.value = storageToDisplay(getTime(id)); });
+  });
 }
 
 function renderSaisie() {
@@ -963,7 +965,7 @@ titleEl.addEventListener('keydown', e => {
 // ── Démarrage ─────────────────────────────────────────────
 
 (async () => {
-  buildTimePickers();
+  initTimeInputs();
   const savedTitle = localStorage.getItem(TITLE_KEY);
   if (savedTitle) titleEl.textContent = savedTitle;
 

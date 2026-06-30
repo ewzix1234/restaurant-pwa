@@ -19,6 +19,11 @@
 
 <div class="container">
 
+  <div id="topbar" class="topbar" style="display:none">
+    <button class="icon-btn" onclick="showSection('section-home')" aria-label="Accueil">🏠</button>
+    <button id="topbar-gear" class="icon-btn" onclick="showSection('section-reglages')" aria-label="Réglages" style="display:none">⚙️</button>
+  </div>
+
   <!-- Accueil : choix employé -->
   <div id="section-home" class="section active">
     <div class="home-main-card" onclick="showSection('section-employes')">
@@ -114,8 +119,6 @@
         <button class="btn btn-secondary btn-sm" onclick="showSection('section-semaines');renderSemaines()">📅 Semaines</button>
         <button class="btn btn-secondary btn-sm" onclick="showSection('section-conges');renderConges()">🏖 Congés</button>
         <button class="btn btn-secondary btn-sm" onclick="window.print()">Imprimer</button>
-        <button class="btn btn-secondary btn-sm" onclick="showSection('section-code')">🔑 Code PIN</button>
-        <button class="btn btn-secondary btn-sm" onclick="showSection('section-sync')">⚙️ Réglages</button>
         <button class="btn btn-primary btn-sm" onclick="cloturerMoisAction()" style="background:#c62828">Clôturer le mois</button>
       </div>
     </div>
@@ -156,20 +159,8 @@
     <button class="btn btn-secondary btn-block" onclick="showSection('section-responsable')">← Récap</button>
   </div>
 
-  <!-- Changer code -->
-  <div id="section-code" class="section">
-    <div class="card">
-      <h2 style="margin-bottom:1rem;font-size:1rem">Changer le code PIN</h2>
-      <div id="alert-code" class="alert"></div>
-      <div class="field"><label>Ancien code</label><input type="password" id="ancien-code" inputmode="numeric" maxlength="6"></div>
-      <div class="field"><label>Nouveau code (6 chiffres)</label><input type="password" id="nouveau-code" inputmode="numeric" maxlength="6"></div>
-      <button class="btn btn-primary btn-block" onclick="changerCode()">Valider</button>
-    </div>
-    <button class="btn btn-secondary btn-block" onclick="showSection('section-responsable')">← Retour</button>
-  </div>
-
-  <!-- Sauvegarde automatique -->
-  <div id="section-sync" class="section">
+  <!-- Réglages (sauvegarde + PIN) -->
+  <div id="section-reglages" class="section">
     <div class="card">
       <div class="accordion-header" onclick="toggleAccordion('acc-auto')">
         <h2 style="font-size:1rem;margin:0">☁ Sauvegarde automatique</h2>
@@ -201,6 +192,19 @@
             <input type="file" accept=".json" style="display:none" onchange="importerFichier(this)">
           </label>
         </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="accordion-header" onclick="toggleAccordion('acc-pin')">
+        <h2 style="font-size:1rem;margin:0">🔑 Changer le code PIN</h2>
+        <span id="acc-pin-icon" class="accordion-icon">▼</span>
+      </div>
+      <div id="acc-pin" class="accordion-body">
+        <div id="alert-code" class="alert"></div>
+        <div class="field"><label>Ancien code</label><input type="password" id="ancien-code" inputmode="numeric" maxlength="6"></div>
+        <div class="field"><label>Nouveau code (6 chiffres)</label><input type="password" id="nouveau-code" inputmode="numeric" maxlength="6"></div>
+        <button class="btn btn-primary btn-block" onclick="changerCode()">Valider</button>
       </div>
     </div>
 
@@ -238,10 +242,12 @@ let currentMois = currentMonth();
 function showSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  document.getElementById('topbar').style.display = (id === 'section-home') ? 'none' : 'flex';
+  document.getElementById('topbar-gear').style.display = (id === 'section-responsable') ? 'inline-flex' : 'none';
   if (id === 'section-employes') renderEmployes();
   if (id === 'section-saisie') renderSaisie();
   if (id === 'section-responsable') renderRecap();
-  if (id === 'section-sync') { renderSyncStatus(); document.getElementById('alert-sync').style.display='none'; }
+  if (id === 'section-reglages') { renderSyncStatus(); document.getElementById('alert-sync').style.display = 'none'; }
   if (id === 'section-pin') {
     document.getElementById('pin-input').value = '';
     document.getElementById('alert-pin').style.display = 'none';
